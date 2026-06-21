@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Apartment — إطلالة ساحرة بوسط الرياض</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      direction: rtl;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0d0d0d 0%, #1a1a1a 50%, #0d1a0d 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 20px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -30%; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(212,168,67,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .brand-tag {
+      background: rgba(212,168,67,0.12);
+      border: 1px solid rgba(212,168,67,0.35);
+      color: #d4a843;
+      padding: 7px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 7vw, 52px);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hero h1 span { color: #d4a843; }
+
+    .hero-sub {
+      font-size: 16px;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    .hero-greeting {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 18px 24px;
+      font-size: 14px;
+      color: #ccc;
+      line-height: 1.8;
+      max-width: 500px;
+      margin: 20px auto 32px;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: #d4a843;
+      color: #000;
+      padding: 14px 30px;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
+
+    .btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      padding: 14px 28px;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .btn-outline:hover { border-color: #d4a843; color: #d4a843; transform: translateY(-2px); }
+
+    /* ===== خصم ===== */
+    .discount-banner {
+      background: linear-gradient(135deg, #1a3d1a, #0f2b0f);
+      border: 1px solid #2d6e2d;
+      margin: 0 16px;
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      max-width: 700px;
+      margin: -20px auto 0;
+      position: relative;
+      z-index: 2;
+    }
+    .discount-pct {
+      font-size: 42px;
+      font-weight: 900;
+      color: #4caf50;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .discount-text h3 { font-size: 16px; color: #81c784; margin-bottom: 4px; }
+    .discount-text p  { font-size: 13px; color: #888; }
+
+    /* ===== قسم الشقق ===== */
+    .section {
+      padding: 70px 16px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .section-title h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .section-title p { color: #888; font-size: 14px; }
+
+    /* بطاقة شقة */
+    .apt-card {
+      background: #161616;
+      border: 1px solid #222;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      transition: transform 0.25s, border-color 0.25s;
+    }
+    .apt-card:hover { transform: translateY(-4px); border-color: #333; }
+
+    .apt-header {
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid #222;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .apt-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge-gold  { background: rgba(212,168,67,0.15); color: #d4a843; border: 1px solid rgba(212,168,67,0.3); }
+    .badge-green { background: rgba(76,175,80,0.12); color: #66bb6a; border: 1px solid rgba(76,175,80,0.25); }
+    .badge-blue  { background: rgba(33,150,243,0.12); color: #64b5f6; border: 1px solid rgba(33,150,243,0.25); }
+
+    .apt-name {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      flex: 1;
+    }
+
+    /* الأسعار */
+    .prices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 18px 24px;
+      border-bottom: 1px solid #1e1e1e;
+    }
+
+    .price-box {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .price-label { font-size: 12px; color: #666; margin-bottom: 6px; }
+    .price-amount {
+      font-size: 24px;
+      font-weight: 900;
+      color: #d4a843;
+    }
+    .price-amount span { font-size: 13px; font-weight: 400; color: #888; }
+
+    /* تفاصيل */
+    .apt-features {
+      padding: 18px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #ccc;
+    }
+    .feature-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #d4a843;
+      flex-shrink: 0;
+    }
+
+    /* ===== بوكينج ===== */
+    .booking-section {
+      padding: 60px 16px;
+      text-align: center;
+      background: linear-gradient(180deg, #0d0d0d, #111);
+    }
+    .booking-section h2 { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
+    .booking-section p  { color: #888; font-size: 14px; margin-bottom: 28px; }
+
+    /* ===== فوتر ===== */
+    .footer {
+      padding: 30px 16px;
+      text-align: center;
+      border-top: 1px solid #1a1a1a;
+    }
+    .footer p { color: #555; font-size: 13px; margin-bottom: 14px; }
+    .social-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .social-btn {
+      padding: 9px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      text-decoration: none;
+      border: 1px solid #333;
+      color: #aaa;
+      transition: all 0.2s;
+    }
+    .social-btn:hover { border-color: #d4a843; color: #d4a843; }
+
+    /* زر واتساب عائم */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      background: #25d366;
+      color: #fff;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+      text-decoration: none;
+      z-index: 999;
+      transition: transform 0.2s;
+    }
+    .whatsapp-float:hover { transform: scale(1.1); }
+    .whatsapp-float svg { width: 28px; height: 28px; fill: #fff; }
+
+    @media (max-width: 500px) {
+      .apt-features { grid-template-columns: 1fr; }
+      .apt-header { flex-direction: column; }
+      .discount-banner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="brand-tag">View Apartment ✦ حي الصحافة، الرياض</div>
+  <h1>إطلالة <span>ساحرة</span><br/>بوسط الرياض</h1>
+  <p class="hero-sub">شقق مفروشة فاخرة بإطلالة بانورامية على أبراج العاصمة</p>
+
+  <div class="hero-greeting">
+    معكم فريق View Apartment<br/>
+    نشكر اختياركم المميز والأنيق لمساكننا
+  </div>
+
+  <div class="cta-group">
+    <a href="https://gathern.co/r/subaie" target="_blank" class="btn-primary">احجز الآن</a>
+    <a href="/demo" class="btn-outline">تحدث مع مها</a>
+  </div>
+</section>
+
+<!-- خصم 15% -->
+<div style="padding: 0 16px; max-width:900px; margin: -20px auto 0; position:relative; z-index:2;">
+  <div class="discount-banner">
+    <div class="discount-pct">15%</div>
+    <div class="discount-text">
+      <h3>خصم عند الحجز عبر الواتساب مباشرة</h3>
+      <p>تواصل معنا وأتمم حجزك بالتحويل المباشر واحصل على خصم 15%</p>
+    </div>
+  </div>
+</div>
+
+<!-- الشقق -->
+<div class="section">
+  <div class="section-title">
+    <h2>خيارات الشقق</h2>
+    <p>ثلاث وحدات مميزة تناسب جميع الأذواق والمناسبات</p>
+  </div>
+
+  <!-- شقة 1: البنت هاوس -->
+  <div class="apt-card">
+    <div class="apt-header">
+      <div>
+        <div class="apt-name">بينت هاوس دورين</div>
+        <div style="color:#888; font-size:13px;">أكبر وحدة — مثالية للمناسبات والعائلات</div>
+      </div>
+      <div class="apt-badge badge-gold">الأفضل للمناسبات</div>
+    </div>
+    <div class="prices">
+      <div class="price-box">
+        <div class="price-label">أيام الأسبوع</div>
+        <div class="price-amount">1,450 <span>ريال/ليلة</span></div>
+      </div>
+      <div class="price-box">
+        <div class="price-label">الويكند (خميس-جمعة)</div>
+        <div class="price-amount">1,950 <span>ريال/ليلة</span></div>
+      </div>
+    </div>
+    <div class="apt-features">
+      <div class="feature"><div class="feature-dot"></div>غرفتان نوم ماستر</div>
+      <div class="feature"><div class="feature-dot"></div>صالة تتسع 8–11 شخص</div>
+      <div class="feature"><div class="feature-dot"></div>3 دورات مياه</div>
+      <div class="feature"><div class="feature-dot"></div>مطبخ كامل</div>
+      <div class="feature"><div class="feature-dot"></div>مسبح أعلى البرج</div>
+      <div class="feature"><div class="feature-dot"></div>دورين فاخر</div>
+    </div>
+  </div>
+
+  <!-- شقة 2: الاقتصادية -->
+  <div class="apt-card">
+    <div class="apt-header">
+      <div>
+        <div class="apt-name">شقة غرفة نوم وصالة — العرض الاقتصادي</div>
+        <div style="color:#888; font-size:13px;">الخيار الأمثل للأزواج والإقامات الهادئة</div>
+      </div>
+      <div class="apt-badge badge-green">عرض اقتصادي</div>
+    </div>
+    <div class="prices">
+      <div class="price-box">
+        <div class="price-label">أيام الأسبوع</div>
+        <div class="price-amount">600 <span>ريال/ليلة</span></div>
+      </div>
+      <div class="price-box">
+        <div class="price-label">الويكند (خميس-جمعة)</div>
+        <div class="price-amount">900 <span>ريال/ليلة</span></div>
+      </div>
+    </div>
+    <div class="apt-features">
+      <div class="feature"><div class="feature-dot"></div>غرفة نوم واحدة</div>
+      <div class="feature"><div class="feature-dot"></div>صالة واسعة</div>
+      <div class="feature"><div class="feature-dot"></div>دورتا مياه</div>
+      <div class="feature"><div class="feature-dot"></div>مطبخ كامل</div>
+    </div>
+  </div>
+
+  <!-- شقة 3: البانيو -->
+  <div class="apt-card">
+    <div class="apt-header">
+      <div>
+        <div class="apt-name">شقة غرفة نوم وصالة واسعة مع بانيو مطل</div>
+        <div style="color:#888; font-size:13px;">تجربة فاخرة بإطلالة على أبراج الرياض</div>
+      </div>
+      <div class="apt-badge badge-blue">إطلالة حصرية</div>
+    </div>
+    <div class="prices">
+      <div class="price-box">
+        <div class="price-label">أيام الأسبوع</div>
+        <div class="price-amount">1,250 <span>ريال/ليلة</span></div>
+      </div>
+      <div class="price-box">
+        <div class="price-label">الويكند (خميس-جمعة)</div>
+        <div class="price-amount">1,800 <span>ريال/ليلة</span></div>
+      </div>
+    </div>
+    <div class="apt-features">
+      <div class="feature"><div class="feature-dot"></div>غرفة نوم واحدة</div>
+      <div class="feature"><div class="feature-dot"></div>صالة تتسع 5–8 أشخاص</div>
+      <div class="feature"><div class="feature-dot"></div>بانيو مطل على الأبراج</div>
+      <div class="feature"><div class="feature-dot"></div>بار مضيء مع 6 كراسي</div>
+    </div>
+  </div>
+</div>
+
+<!-- احجز الآن -->
+<div class="booking-section">
+  <h2>جاهز للحجز</h2>
+  <p>احجز مباشرة عبر قاذر إن أو تحدث مع مها للحصول على خصم 15%</p>
+  <div class="cta-group">
+    <a href="https://gathern.co/r/subaie" target="_blank" class="btn-primary">احجز على قاذر إن</a>
+    <a href="/demo" class="btn-outline">تحدث مع مها واحصل على الخصم</a>
+  </div>
+</div>
+
+<!-- فوتر -->
+<div class="footer">
+  <p>View Apartment — إطلالة ساحرة بوسط الرياض، حي الصحافة</p>
+  <div class="social-links">
+    <a href="https://gathern.co/r/subaie" target="_blank" class="social-btn">قاذر إن</a>
+    <a href="https://www.tiktok.com/@suit122" target="_blank" class="social-btn">تيك توك</a>
+  </div>
+</div>
+
+<!-- زر واتساب عائم -->
+<a href="https://gathern.co/r/subaie" target="_blank" class="whatsapp-float" title="احجز الآن">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+# لا ترفع الملفات الحساسة أو الملفات المؤقتة على الإنترنت
+
+.env
+conversations.db
+*.log
+logs/
+personal_contacts.txt
+
+# ملفات بايثون المؤقتة
+__pycache__/
+*.pyc
+venv/
+.venv/

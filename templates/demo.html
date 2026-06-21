@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مها — View Apartment</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      background: #e5ddd5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .phone {
+      width: 390px;
+      height: 720px;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      background: #075e54;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: #128c7e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .header-info h2 { color: #fff; font-size: 16px; font-weight: 600; }
+
+    .status-text {
+      color: #b2dfdb;
+      font-size: 12px;
+      margin-top: 2px;
+      min-height: 16px;
+    }
+
+    .reset-btn {
+      margin-right: auto;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.35);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .reset-btn:hover { background: rgba(255,255,255,0.1); }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: #e5ddd5;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      word-break: break-word;
+      white-space: pre-wrap;
+      animation: pop 0.18s ease;
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: scale(0.96); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .bubble.agent {
+      background: #fff;
+      align-self: flex-start;
+      border-bottom-right-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .bubble.user {
+      background: #dcf8c6;
+      align-self: flex-end;
+      border-bottom-left-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .typing-wrap {
+      align-self: flex-start;
+      animation: pop 0.18s ease;
+    }
+
+    .typing-bubble {
+      background: #fff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border-bottom-right-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .typing-bubble span {
+      display: inline-block;
+      width: 7px; height: 7px;
+      background: #aaa;
+      border-radius: 50%;
+      animation: bounce 1.3s infinite;
+    }
+    .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); background: #aaa; }
+      40%           { transform: translateY(-5px); background: #555; }
+    }
+
+    .input-area {
+      background: #f0f0f0;
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    #msg-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 24px;
+      background: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      line-height: 1.45;
+      max-height: 110px;
+      overflow-y: auto;
+      direction: rtl;
+    }
+
+    #send-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: #075e54;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    #send-btn:hover  { background: #128c7e; }
+    #send-btn:active { background: #054d44; }
+    #send-btn svg { fill: #fff; }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <div class="header">
+    <div class="avatar">م</div>
+    <div class="header-info">
+      <h2>مها</h2>
+      <div class="status-text" id="status-text">View Apartment</div>
+    </div>
+    <button class="reset-btn" onclick="resetChat()">محادثة جديدة</button>
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-area">
+    <textarea id="msg-input" rows="1" placeholder="اكتب رسالة..."
+      onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button id="send-btn" onclick="sendMessage()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
+
+</div>
+
+<script>
+  const SESSION = "demo-" + Math.random().toString(36).slice(2, 9);
+  let waiting = false;
+
+  const GREETINGS = [
+    "هلا وغلا معك مها من View Apartment وش أقدر أساعدك فيه",
+    "أهلين أنا مها من View Apartment تفضل",
+    "هلا بك أنا مها من View Apartment وش تحتاج",
+    "يهلا معك مها من View Apartment كيف أخدمك",
+    "هلا أنا مها من View Apartment وش أقدر أسوي لك"
+  ];
+
+  function rand(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+
+  /*
+   * يختار نمط رد عشوائي لكل رسالة:
+   *   سريع   (40%) — تقرأ 1-3 ث ثم تكتب
+   *   متوسط  (35%) — تقرأ 4-9 ث ثم تكتب
+   *   بطيء   (18%) — تقرأ 12-25 ث ثم تكتب
+   *   مشغول  (7%)  — تقرأ 35-70 ث ثم تكتب
+   */
+  function readingDelay() {
+    const r = Math.random();
+    if (r < 0.40) return rand(1000, 3000);
+    if (r < 0.75) return rand(4000, 9000);
+    if (r < 0.93) return rand(12000, 25000);
+    return rand(35000, 70000);
+  }
+
+  /*
+   * سرعة الكتابة تتغير كل رسالة أيضاً:
+   *   سريعة (50%) — 12 حرف/ث
+   *   متوسطة(35%) — 8 حرف/ث
+   *   بطيئة (15%) — 5 حرف/ث
+   * مع jitter ±20% وحد أقصى 20 ثانية.
+   */
+  function calcTypingMs(charCount) {
+    const r = Math.random();
+    const speed = r < 0.50 ? 12 : r < 0.85 ? 8 : 5;
+    const base  = Math.max(1500, (charCount / speed) * 1000);
+    const jitter = rand(0.80, 1.20);
+    return Math.min(base * jitter, 20000);
+  }
+
+  function scrollDown() {
+    const box = document.getElementById("messages");
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function addBubble(text, type) {
+    const box = document.getElementById("messages");
+    const el = document.createElement("div");
+    el.className = "bubble " + type;
+    el.textContent = text;
+    box.appendChild(el);
+    scrollDown();
+  }
+
+  function showTyping() {
+    const box = document.getElementById("messages");
+    const wrap = document.createElement("div");
+    wrap.className = "typing-wrap";
+    wrap.id = "typing-indicator";
+    wrap.innerHTML = `<div class="typing-bubble">
+      <span></span><span></span><span></span>
+    </div>`;
+    box.appendChild(wrap);
+    scrollDown();
+    document.getElementById("status-text").textContent = "تكتب...";
+  }
+
+  function hideTyping() {
+    const el = document.getElementById("typing-indicator");
+    if (el) el.remove();
+    document.getElementById("status-text").textContent = "View Apartment";
+  }
+
+  // (دالة calcTypingMs معرّفة أعلاه)
+
+  async function showOpeningGreeting() {
+    await sleep(rand(1500, 3000));
+    showTyping();
+    await sleep(rand(2000, 3500));
+    hideTyping();
+    const msg = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    addBubble(msg, "agent");
+  }
+
+  async function sendMessage() {
+    if (waiting) return;
+    const input = document.getElementById("msg-input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = "";
+    autoResize(input);
+    addBubble(text, "user");
+    waiting = true;
+
+    // مها "تقرأ" الرسالة — المدة تتغير كل مرة
+    await sleep(readingDelay());
+    showTyping();
+
+    try {
+      const fetchStart = Date.now();
+
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, session: SESSION })
+      });
+      const data = await res.json();
+
+      // كم أخذ الطلب من الوقت
+      const elapsed = Date.now() - fetchStart;
+
+      // كم المفروض تكتب مها بناءً على طول الرد
+      const typingTarget = calcTypingMs(data.length || data.reply.length);
+
+      // إذا الرد جاء بسرعة، ننتظر الباقي من وقت الكتابة
+      const remaining = Math.max(0, typingTarget - elapsed);
+      if (remaining > 0) await sleep(remaining);
+
+      hideTyping();
+      if (data.reply) addBubble(data.reply, "agent");
+
+    } catch (e) {
+      hideTyping();
+      addBubble("عذراً، حدث خطأ في الاتصال.", "agent");
+    }
+
+    waiting = false;
+  }
+
+  async function resetChat() {
+    await fetch("/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session: SESSION })
+    });
+    document.getElementById("messages").innerHTML = "";
+  }
+
+  function handleKey(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function autoResize(el) {
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 110) + "px";
+  }
+
+</script>
+
+</body>
+</html>

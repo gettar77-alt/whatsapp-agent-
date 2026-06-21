@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>المحادثات</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f2f3f7; min-height: 100vh; max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+
+    .header { background: #075e54; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+    .back-btn { color: #fff; text-decoration: none; font-size: 20px; }
+    .header h1 { color: #fff; font-size: 17px; font-weight: 700; }
+    .header p  { color: #b2dfdb; font-size: 12px; margin-top: 2px; }
+
+    .empty { text-align: center; color: #bbb; padding: 60px 20px; font-size: 15px; }
+
+    .conv-list { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+    .conv-item {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer;
+    }
+
+    .conv-header {
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .conv-avatar {
+      width: 42px; height: 42px;
+      background: #075e54;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 16px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .conv-phone { font-size: 14px; font-weight: 700; color: #111; }
+    .conv-time  { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+    .conv-messages { display: none; padding: 12px 14px; background: #f9f9f9; }
+    .conv-messages.open { display: block; }
+
+    .msg { margin-bottom: 8px; }
+    .msg-bubble {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      max-width: 85%;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .msg.user { text-align: left; }
+    .msg.user .msg-bubble { background: #dcf8c6; border-bottom-left-radius: 3px; }
+    .msg.assistant { text-align: right; }
+    .msg.assistant .msg-bubble { background: #fff; border: 1px solid #eee; border-bottom-right-radius: 3px; }
+    .msg-time { font-size: 10px; color: #bbb; margin-top: 2px; padding: 0 4px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="/admin" class="back-btn">←</a>
+  <div>
+    <h1>محادثات العملاء</h1>
+    <p>{{ conversations | length }} عميل</p>
+  </div>
+</div>
+
+{% if not conversations %}
+<div class="empty">ما في محادثات بعد</div>
+{% else %}
+<div class="conv-list">
+  {% for conv in conversations %}
+  <div class="conv-item">
+    <div class="conv-header" onclick="toggle(this)">
+      <div class="conv-avatar">{{ conv.phone[-2:] }}</div>
+      <div>
+        <div class="conv-phone">{{ conv.phone }}</div>
+        <div class="conv-time">{{ conv.last_msg }}</div>
+      </div>
+    </div>
+    <div class="conv-messages" id="conv-{{ loop.index }}">
+      {% for msg in conv.messages %}
+      <div class="msg {{ msg.role }}">
+        <div class="msg-bubble">{{ msg.content }}</div>
+        <div class="msg-time">{{ msg.time }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<script>
+  function toggle(header) {
+    const msgs = header.nextElementSibling;
+    msgs.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

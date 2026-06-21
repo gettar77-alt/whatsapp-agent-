@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>لوحة الإدارة</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      background: #f2f3f7;
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      padding-bottom: 80px;
+    }
+
+    /* ===== الهيدر ===== */
+    .header {
+      background: #075e54;
+      padding: 18px 20px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { color: #fff; font-size: 18px; font-weight: 700; }
+    .header p  { color: #b2dfdb; font-size: 12px; margin-top: 2px; }
+    .logout-btn {
+      background: rgba(255,255,255,0.18);
+      color: #fff; border: none;
+      padding: 9px 18px; border-radius: 22px;
+      font-size: 14px; font-family: inherit;
+      cursor: pointer; text-decoration: none;
+    }
+
+    /* بادج مها */
+    .maha-bar {
+      background: #e8f5e9;
+      padding: 11px 20px;
+      display: flex; align-items: center; gap: 9px;
+      font-size: 13px; color: #2e7d32;
+      border-bottom: 1px solid #c8e6c9;
+    }
+    .dot {
+      width: 9px; height: 9px;
+      background: #43a047; border-radius: 50%;
+      animation: pulse 1.8s infinite; flex-shrink: 0;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.45; transform:scale(1.4); }
+    }
+
+    /* روابط سريعة */
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+      padding: 14px 16px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+    .q-btn {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 5px;
+      padding: 14px 4px;
+      background: #f8f8f8;
+      border-radius: 14px;
+      text-decoration: none;
+      border: 1.5px solid #ebebeb;
+      transition: background 0.18s;
+      cursor: pointer;
+    }
+    .q-btn:active { background: #e8f5e9; border-color: #a5d6a7; }
+    .q-icon  { font-size: 24px; }
+    .q-label { font-size: 12px; color: #333; font-weight: 600; }
+    .q-sub   { font-size: 11px; color: #aaa; }
+
+    /* ===== بطاقات الشقق ===== */
+    .cards { padding: 14px 14px 0; }
+
+    .unit-card {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+
+    .unit-header {
+      padding: 16px 18px;
+      display: flex; align-items: center; gap: 14px;
+      border-bottom: 1px solid #f3f3f3;
+    }
+    .unit-num {
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 900; color: #fff;
+      flex-shrink: 0;
+    }
+    .u0 .unit-num { background: #1565c0; }
+    .u1 .unit-num { background: #6a1b9a; }
+    .u2 .unit-num { background: #e65100; }
+
+    .unit-name { font-size: 15px; font-weight: 700; color: #111; line-height: 1.3; }
+    .unit-sub  { font-size: 12px; color: #aaa; margin-top: 3px; }
+
+    .unit-body { padding: 16px 16px 18px; }
+
+    /* تبويبات */
+    .tabs {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: #f3f3f3; border-radius: 12px;
+      padding: 4px; gap: 4px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      padding: 10px;
+      border: none; background: transparent;
+      border-radius: 9px;
+      font-size: 14px; font-weight: 600;
+      color: #888; cursor: pointer;
+      font-family: inherit;
+      transition: all 0.18s;
+    }
+    .tab-btn.active {
+      background: #fff;
+      color: #075e54;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* محتوى التبويب */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* فورم الإضافة */
+    .field-label { font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 600; }
+
+    input[type=date] {
+      width: 100%;
+      padding: 14px 14px;
+      border: 1.5px solid #e5e5e5;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: inherit;
+      background: #fafafa;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border 0.18s;
+    }
+    input[type=date]:focus { border-color: #075e54; background: #fff; }
+
+    .add-btn {
+      width: 100%; padding: 16px;
+      background: #075e54; color: #fff;
+      border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 700;
+      font-family: inherit; cursor: pointer;
+      transition: background 0.18s;
+    }
+    .add-btn:active { background: #054d44; transform: scale(0.98); }
+
+    /* الفترات */
+    .period-item {
+      background: #fff8f0;
+      border: 1.5px solid #ffe0b2;
+      border-radius: 12px;
+      padding: 14px 14px;
+      margin-bottom: 10px;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 10px;
+    }
+    .period-dates {
+      font-size: 15px; font-weight: 700; color: #333;
+      flex: 1;
+    }
+    .period-sub { font-size: 11px; color: #bbb; margin-top: 2px; }
+
+    .del-btn {
+      background: #ffebee; color: #c62828;
+      border: none; padding: 10px 16px;
+      border-radius: 10px; font-size: 14px;
+      font-family: inherit; cursor: pointer;
+      font-weight: 700; white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .del-btn:active { background: #ffcdd2; transform: scale(0.96); }
+
+    .empty-msg {
+      text-align: center; color: #ccc;
+      font-size: 14px; padding: 20px 0;
+    }
+
+    .count-badge {
+      background: #e8f5e9; color: #2e7d32;
+      padding: 2px 9px; border-radius: 10px;
+      font-size: 12px; font-weight: 700;
+      margin-right: 6px;
+    }
+    .periods-header {
+      display: flex; align-items: center;
+      margin-bottom: 12px;
+      font-size: 14px; font-weight: 700; color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<!-- الهيدر -->
+<div class="header">
+  <div class="header-row">
+    <div>
+      <h1>لوحة الإدارة</h1>
+      <p>View Apartment</p>
+    </div>
+    <a href="/admin/logout" class="logout-btn">خروج</a>
+  </div>
+</div>
+
+<!-- بادج مها -->
+<div class="maha-bar">
+  <div class="dot"></div>
+  مها متصلة — التغييرات تظهر عندها فوراً
+</div>
+
+<!-- روابط سريعة -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 16px; background:#fff; border-bottom:1px solid #eee;">
+  <a href="https://gathern.co/r/subaie" target="_blank" class="q-btn">
+    <div class="q-icon">🏠</div>
+    <div class="q-label">قاذر إن</div>
+  </a>
+  <a href="/admin/conversations" class="q-btn">
+    <div class="q-icon">💬</div>
+    <div class="q-label">المحادثات</div>
+  </a>
+</div>
+
+<!-- بطاقات الشقق -->
+<div class="cards">
+
+{% for unit in units %}
+{% set unit_idx = loop.index0 %}
+{% set uid = "u" ~ unit_idx %}
+
+<div class="unit-card u{{ unit_idx }}">
+
+  <div class="unit-header">
+    <div class="unit-num">{{ loop.index }}</div>
+    <div>
+      <div class="unit-name">{{ unit["الاسم"] }}</div>
+      <div class="unit-sub">
+        {% if unit["المساحة_بالمتر"] is defined %}{{ unit["المساحة_بالمتر"] }} م²{% endif %}
+        {% if unit["السعر_يبدأ_من_بالريال"] is defined %} • يبدأ من {{ unit["السعر_يبدأ_من_بالريال"] }} ريال{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="unit-body">
+
+    <!-- تبويبات -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('{{ uid }}','add',this)">إضافة حجز</button>
+      <button class="tab-btn" onclick="switchTab('{{ uid }}','list',this)">
+        الفترات
+        {% if unit["الفترات_المقفلة"] %}
+        <span class="count-badge">{{ unit["الفترات_المقفلة"] | length }}</span>
+        {% endif %}
+      </button>
+    </div>
+
+    <!-- تبويب الإضافة -->
+    <div id="{{ uid }}-add" class="tab-content active">
+      <form method="POST" action="/admin/add">
+        <input type="hidden" name="unit" value="{{ unit_idx }}"/>
+        <div class="field-label">من تاريخ</div>
+        <input type="date" name="date_from" required/>
+        <div class="field-label">إلى تاريخ</div>
+        <input type="date" name="date_to" required/>
+        <button type="submit" class="add-btn">+ أضف فترة محجوزة</button>
+      </form>
+    </div>
+
+    <!-- تبويب القائمة -->
+    <div id="{{ uid }}-list" class="tab-content">
+      {% if unit["الفترات_المقفلة"] %}
+        <div class="periods-header">الفترات المحجوزة</div>
+        {% for period in unit["الفترات_المقفلة"] %}
+        <div class="period-item">
+          <div>
+            <div class="period-dates">{{ period["من"] }}  →  {{ period["إلى"] }}</div>
+            <div class="period-sub">فترة محجوزة</div>
+          </div>
+          <form method="POST" action="/admin/delete">
+            <input type="hidden" name="unit"   value="{{ unit_idx }}"/>
+            <input type="hidden" name="period" value="{{ loop.index0 }}"/>
+            <button type="submit" class="del-btn">حذف</button>
+          </form>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-msg">لا توجد فترات محجوزة</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endfor %}
+
+</div>
+
+<script>
+  function switchTab(uid, tab, btn) {
+    const card = btn.closest('.unit-card');
+    card.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    card.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(uid + '-' + tab).classList.add('active');
+  }
+</script>
+
+</body>
+</html>
