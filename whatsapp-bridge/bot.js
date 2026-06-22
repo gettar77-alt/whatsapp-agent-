@@ -65,10 +65,14 @@ client.on("message", async (msg) => {
     if (msg.type !== "chat") return;
 
     // 3) القاعدة الذهبية: لو الرقم محفوظ كجهة اتصال → تجاهل تماماً
-    const contact = await msg.getContact();
-    if (contact.isMyContact) return;
-
     const phone = msg.from.replace("@c.us", "");
+    const contact = await msg.getContact();
+    if (contact.isMyContact) {
+      console.log(`[تجاهل] رقم محفوظ: ${phone}`);
+      return;
+    }
+    console.log(`[وارد] رقم غير محفوظ: ${phone}`);
+
     const text = (msg.body || "").trim();
     if (!text) return;
 
@@ -90,6 +94,7 @@ client.on("message", async (msg) => {
     await humanDelay(1500, Math.min(1500 + reply.length * 60, 9000));
 
     await client.sendMessage(msg.from, reply);
+    console.log(`[رد] أُرسل إلى ${phone}`);
   } catch (e) {
     console.error("خطأ في معالجة رسالة:", e.message);
   }
