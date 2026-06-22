@@ -11,3 +11,11 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+
+# ملفات جسر واتساب (Node)
+node_modules/
+whatsapp-bridge/node_modules/
+whatsapp-bridge/.wwebjs_auth/
+whatsapp-bridge/.wwebjs_cache/
+.wwebjs_auth/
+.wwebjs_cache/
