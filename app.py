@@ -155,6 +155,27 @@ def admin_conversations():
     return render_template("admin_conversations.html", conversations=convs)
 
 
+@app.route("/admin/update-prices", methods=["POST"])
+def admin_update_prices():
+    if not session.get("admin"):
+        return redirect(url_for("admin"))
+    unit_idx     = int(request.form["unit"])
+    weekday      = request.form.get("weekday", "").strip()
+    weekend      = request.form.get("weekend", "").strip()
+    deposit      = request.form.get("deposit", "").strip()
+    data = _load_apartments()
+    unit = data["الوحدات"][unit_idx]
+    if weekday.isdigit():
+        unit["السعر_أيام_الأسبوع"]    = int(weekday)
+        unit["السعر_يبدأ_من_بالريال"] = int(weekday)
+    if weekend.isdigit():
+        unit["السعر_الويكند"] = int(weekend)
+    if deposit.isdigit():
+        unit["مبلغ_التأمين_بالريال"] = int(deposit)
+    _save_apartments(data)
+    return redirect(url_for("admin"))
+
+
 @app.route("/admin/logout")
 def admin_logout():
     session.pop("admin", None)

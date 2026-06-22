@@ -16,40 +16,27 @@
       padding-bottom: 80px;
     }
 
-    /* ===== الهيدر ===== */
     .header {
       background: #075e54;
       padding: 18px 20px 16px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      position: sticky; top: 0; z-index: 10;
     }
-    .header-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    .header-row { display: flex; align-items: center; justify-content: space-between; }
     .header h1 { color: #fff; font-size: 18px; font-weight: 700; }
     .header p  { color: #b2dfdb; font-size: 12px; margin-top: 2px; }
     .logout-btn {
-      background: rgba(255,255,255,0.18);
-      color: #fff; border: none;
+      background: rgba(255,255,255,0.18); color: #fff; border: none;
       padding: 9px 18px; border-radius: 22px;
-      font-size: 14px; font-family: inherit;
-      cursor: pointer; text-decoration: none;
+      font-size: 14px; font-family: inherit; cursor: pointer; text-decoration: none;
     }
 
-    /* بادج مها */
     .maha-bar {
-      background: #e8f5e9;
-      padding: 11px 20px;
+      background: #e8f5e9; padding: 11px 20px;
       display: flex; align-items: center; gap: 9px;
-      font-size: 13px; color: #2e7d32;
-      border-bottom: 1px solid #c8e6c9;
+      font-size: 13px; color: #2e7d32; border-bottom: 1px solid #c8e6c9;
     }
     .dot {
-      width: 9px; height: 9px;
-      background: #43a047; border-radius: 50%;
+      width: 9px; height: 9px; background: #43a047; border-radius: 50%;
       animation: pulse 1.8s infinite; flex-shrink: 0;
     }
     @keyframes pulse {
@@ -57,53 +44,34 @@
       50%      { opacity:.45; transform:scale(1.4); }
     }
 
-    /* روابط سريعة */
     .quick {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 10px;
-      padding: 14px 16px;
-      background: #fff;
-      border-bottom: 1px solid #eee;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      padding: 12px 16px; background: #fff; border-bottom: 1px solid #eee;
     }
     .q-btn {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 5px;
-      padding: 14px 4px;
-      background: #f8f8f8;
-      border-radius: 14px;
-      text-decoration: none;
-      border: 1.5px solid #ebebeb;
-      transition: background 0.18s;
-      cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 14px 4px; background: #f8f8f8; border-radius: 14px;
+      text-decoration: none; border: 1.5px solid #ebebeb; cursor: pointer;
     }
     .q-btn:active { background: #e8f5e9; border-color: #a5d6a7; }
-    .q-icon  { font-size: 24px; }
+    .q-icon  { font-size: 22px; }
     .q-label { font-size: 12px; color: #333; font-weight: 600; }
-    .q-sub   { font-size: 11px; color: #aaa; }
 
-    /* ===== بطاقات الشقق ===== */
     .cards { padding: 14px 14px 0; }
 
     .unit-card {
-      background: #fff;
-      border-radius: 18px;
-      overflow: hidden;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      background: #fff; border-radius: 18px; overflow: hidden;
+      margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
     }
 
     .unit-header {
-      padding: 16px 18px;
-      display: flex; align-items: center; gap: 14px;
+      padding: 16px 18px; display: flex; align-items: center; gap: 14px;
       border-bottom: 1px solid #f3f3f3;
     }
     .unit-num {
-      width: 46px; height: 46px;
-      border-radius: 14px;
+      width: 46px; height: 46px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 22px; font-weight: 900; color: #fff;
-      flex-shrink: 0;
+      font-size: 22px; font-weight: 900; color: #fff; flex-shrink: 0;
     }
     .u0 .unit-num { background: #1565c0; }
     .u1 .unit-num { background: #6a1b9a; }
@@ -114,106 +82,126 @@
 
     .unit-body { padding: 16px 16px 18px; }
 
-    /* تبويبات */
+    /* تبويبات — 3 الحين */
     .tabs {
-      display: grid; grid-template-columns: 1fr 1fr;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
       background: #f3f3f3; border-radius: 12px;
-      padding: 4px; gap: 4px;
-      margin-bottom: 16px;
+      padding: 4px; gap: 4px; margin-bottom: 16px;
     }
     .tab-btn {
-      padding: 10px;
-      border: none; background: transparent;
-      border-radius: 9px;
-      font-size: 14px; font-weight: 600;
-      color: #888; cursor: pointer;
-      font-family: inherit;
-      transition: all 0.18s;
+      padding: 9px 4px; border: none; background: transparent;
+      border-radius: 9px; font-size: 13px; font-weight: 600;
+      color: #888; cursor: pointer; font-family: inherit; transition: all 0.18s;
     }
     .tab-btn.active {
-      background: #fff;
-      color: #075e54;
+      background: #fff; color: #075e54;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
 
-    /* محتوى التبويب */
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* فورم الإضافة */
+    /* حقول عامة */
     .field-label { font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 600; }
 
-    input[type=date] {
-      width: 100%;
-      padding: 14px 14px;
-      border: 1.5px solid #e5e5e5;
-      border-radius: 12px;
-      font-size: 16px;
-      font-family: inherit;
-      background: #fafafa;
-      outline: none;
-      margin-bottom: 12px;
+    input[type=date], input[type=number] {
+      width: 100%; padding: 14px;
+      border: 1.5px solid #e5e5e5; border-radius: 12px;
+      font-size: 16px; font-family: inherit;
+      background: #fafafa; outline: none; margin-bottom: 12px;
       transition: border 0.18s;
     }
-    input[type=date]:focus { border-color: #075e54; background: #fff; }
+    input[type=date]:focus,
+    input[type=number]:focus { border-color: #075e54; background: #fff; }
 
     .add-btn {
       width: 100%; padding: 16px;
       background: #075e54; color: #fff;
       border: none; border-radius: 14px;
       font-size: 16px; font-weight: 700;
-      font-family: inherit; cursor: pointer;
-      transition: background 0.18s;
+      font-family: inherit; cursor: pointer; transition: background 0.18s;
     }
     .add-btn:active { background: #054d44; transform: scale(0.98); }
 
+    /* ===== قسم الأسعار ===== */
+    .prices-current {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 16px;
+    }
+    .price-box {
+      background: #f8f9ff;
+      border: 1.5px solid #e3e8ff;
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .price-box.deposit {
+      grid-column: span 2;
+      background: #fff8f0;
+      border-color: #ffe0b2;
+    }
+    .price-box-label {
+      font-size: 11px; color: #999; margin-bottom: 6px; font-weight: 600;
+    }
+    .price-box-value {
+      font-size: 22px; font-weight: 900;
+      color: #1565c0;
+    }
+    .price-box.deposit .price-box-value { color: #e65100; }
+    .price-box-unit { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+    .divider {
+      border: none; border-top: 1.5px dashed #eee;
+      margin: 14px 0;
+    }
+
+    .save-btn {
+      width: 100%; padding: 16px;
+      background: #1565c0; color: #fff;
+      border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 700;
+      font-family: inherit; cursor: pointer; transition: background 0.18s;
+    }
+    .save-btn:active { background: #0d47a1; transform: scale(0.98); }
+
     /* الفترات */
     .period-item {
-      background: #fff8f0;
-      border: 1.5px solid #ffe0b2;
-      border-radius: 12px;
-      padding: 14px 14px;
-      margin-bottom: 10px;
-      display: flex; align-items: center;
+      background: #fff8f0; border: 1.5px solid #ffe0b2;
+      border-radius: 12px; padding: 14px;
+      margin-bottom: 10px; display: flex; align-items: center;
       justify-content: space-between; gap: 10px;
     }
-    .period-dates {
-      font-size: 15px; font-weight: 700; color: #333;
-      flex: 1;
-    }
-    .period-sub { font-size: 11px; color: #bbb; margin-top: 2px; }
+    .period-dates { font-size: 15px; font-weight: 700; color: #333; flex: 1; }
+    .period-sub   { font-size: 11px; color: #bbb; margin-top: 2px; }
 
     .del-btn {
       background: #ffebee; color: #c62828;
-      border: none; padding: 10px 16px;
-      border-radius: 10px; font-size: 14px;
-      font-family: inherit; cursor: pointer;
-      font-weight: 700; white-space: nowrap;
-      flex-shrink: 0;
+      border: none; padding: 10px 16px; border-radius: 10px;
+      font-size: 14px; font-family: inherit; cursor: pointer;
+      font-weight: 700; white-space: nowrap; flex-shrink: 0;
     }
     .del-btn:active { background: #ffcdd2; transform: scale(0.96); }
-
-    .empty-msg {
-      text-align: center; color: #ccc;
-      font-size: 14px; padding: 20px 0;
-    }
 
     .count-badge {
       background: #e8f5e9; color: #2e7d32;
       padding: 2px 9px; border-radius: 10px;
-      font-size: 12px; font-weight: 700;
-      margin-right: 6px;
+      font-size: 12px; font-weight: 700; margin-right: 4px;
     }
-    .periods-header {
-      display: flex; align-items: center;
-      margin-bottom: 12px;
-      font-size: 14px; font-weight: 700; color: #333;
+    .empty-msg { text-align: center; color: #ccc; font-size: 14px; padding: 20px 0; }
+
+    /* toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #075e54; color: #fff; padding: 12px 24px;
+      border-radius: 30px; font-size: 14px; font-weight: 600;
+      display: none; z-index: 999; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
 
-<!-- الهيدر -->
+<!-- هيدر -->
 <div class="header">
   <div class="header-row">
     <div>
@@ -227,11 +215,11 @@
 <!-- بادج مها -->
 <div class="maha-bar">
   <div class="dot"></div>
-  مها متصلة — التغييرات تظهر عندها فوراً
+  مها متصلة — أي تغيير يظهر عندها فوراً
 </div>
 
 <!-- روابط سريعة -->
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 16px; background:#fff; border-bottom:1px solid #eee;">
+<div class="quick">
   <a href="https://gathern.co/r/subaie" target="_blank" class="q-btn">
     <div class="q-icon">🏠</div>
     <div class="q-label">قاذر إن</div>
@@ -256,27 +244,69 @@
     <div>
       <div class="unit-name">{{ unit["الاسم"] }}</div>
       <div class="unit-sub">
-        {% if unit["المساحة_بالمتر"] is defined %}{{ unit["المساحة_بالمتر"] }} م²{% endif %}
-        {% if unit["السعر_يبدأ_من_بالريال"] is defined %} • يبدأ من {{ unit["السعر_يبدأ_من_بالريال"] }} ريال{% endif %}
+        {% if unit.get("المساحة_بالمتر") %}{{ unit["المساحة_بالمتر"] }} م²  •  {% endif %}
+        أيام: {{ unit.get("السعر_أيام_الأسبوع", "—") }} ر  |  ويكند: {{ unit.get("السعر_الويكند", "—") }} ر
       </div>
     </div>
   </div>
 
   <div class="unit-body">
 
-    <!-- تبويبات -->
+    <!-- تبويبات 3 -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('{{ uid }}','add',this)">إضافة حجز</button>
+      <button class="tab-btn active" onclick="switchTab('{{ uid }}','prices',this)">الأسعار</button>
+      <button class="tab-btn" onclick="switchTab('{{ uid }}','add',this)">إضافة حجز</button>
       <button class="tab-btn" onclick="switchTab('{{ uid }}','list',this)">
-        الفترات
-        {% if unit["الفترات_المقفلة"] %}
-        <span class="count-badge">{{ unit["الفترات_المقفلة"] | length }}</span>
-        {% endif %}
+        الفترات{% if unit["الفترات_المقفلة"] %}<span class="count-badge">{{ unit["الفترات_المقفلة"]|length }}</span>{% endif %}
       </button>
     </div>
 
-    <!-- تبويب الإضافة -->
-    <div id="{{ uid }}-add" class="tab-content active">
+    <!-- ===== تبويب الأسعار ===== -->
+    <div id="{{ uid }}-prices" class="tab-content active">
+
+      <!-- عرض الأسعار الحالية -->
+      <div class="prices-current">
+        <div class="price-box">
+          <div class="price-box-label">أيام الأسبوع</div>
+          <div class="price-box-value">{{ unit.get("السعر_أيام_الأسبوع", "—") }}</div>
+          <div class="price-box-unit">ريال / ليلة</div>
+        </div>
+        <div class="price-box">
+          <div class="price-box-label">الويكند (خ-ج)</div>
+          <div class="price-box-value">{{ unit.get("السعر_الويكند", "—") }}</div>
+          <div class="price-box-unit">ريال / ليلة</div>
+        </div>
+        <div class="price-box deposit">
+          <div class="price-box-label">مبلغ التأمين</div>
+          <div class="price-box-value">{{ unit.get("مبلغ_التأمين_بالريال", "—") }}</div>
+          <div class="price-box-unit">ريال (يُرجع بعد الإقامة)</div>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+
+      <!-- فورم تعديل الأسعار -->
+      <form method="POST" action="/admin/update-prices" onsubmit="showToast()">
+        <input type="hidden" name="unit" value="{{ unit_idx }}"/>
+
+        <div class="field-label">سعر أيام الأسبوع (ريال)</div>
+        <input type="number" name="weekday" min="0" step="50"
+               placeholder="{{ unit.get('السعر_أيام_الأسبوع', '') }}"/>
+
+        <div class="field-label">سعر الويكند — خميس وجمعة (ريال)</div>
+        <input type="number" name="weekend" min="0" step="50"
+               placeholder="{{ unit.get('السعر_الويكند', '') }}"/>
+
+        <div class="field-label">مبلغ التأمين (ريال)</div>
+        <input type="number" name="deposit" min="0" step="50"
+               placeholder="{{ unit.get('مبلغ_التأمين_بالريال', '') }}"/>
+
+        <button type="submit" class="save-btn">حفظ الأسعار</button>
+      </form>
+    </div>
+
+    <!-- ===== تبويب إضافة حجز ===== -->
+    <div id="{{ uid }}-add" class="tab-content">
       <form method="POST" action="/admin/add">
         <input type="hidden" name="unit" value="{{ unit_idx }}"/>
         <div class="field-label">من تاريخ</div>
@@ -287,10 +317,9 @@
       </form>
     </div>
 
-    <!-- تبويب القائمة -->
+    <!-- ===== تبويب الفترات ===== -->
     <div id="{{ uid }}-list" class="tab-content">
       {% if unit["الفترات_المقفلة"] %}
-        <div class="periods-header">الفترات المحجوزة</div>
         {% for period in unit["الفترات_المقفلة"] %}
         <div class="period-item">
           <div>
@@ -315,6 +344,9 @@
 
 </div>
 
+<!-- toast إشعار -->
+<div class="toast" id="toast">تم حفظ الأسعار ✓</div>
+
 <script>
   function switchTab(uid, tab, btn) {
     const card = btn.closest('.unit-card');
@@ -322,6 +354,12 @@
     card.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(uid + '-' + tab).classList.add('active');
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2500);
   }
 </script>
 
