@@ -10,6 +10,9 @@ from claude_client import get_reply
 app = Flask(__name__)
 app.secret_key = config.ADMIN_PASSWORD + "_secret"
 
+# إنشاء قاعدة البيانات عند تحميل التطبيق (يعمل مع gunicorn وأيضاً التشغيل اليدوي)
+database.init_db()
+
 HANDOFF_KEYWORDS = ["أوصل لك أحد", "من الفريق", "يتواصل معك"]
 MEDIA_REPLY = "ما أقدر أشوف الصور أو الملفات، بس قدر أساعدك بالكلام. وش تحتاج"
 
