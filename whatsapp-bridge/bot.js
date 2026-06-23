@@ -71,10 +71,10 @@ async function sendPhotos(chatId, key, phone) {
       .readdirSync(dir)
       .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
       .sort();
+    // ترسل كل الصور دفعة وحدة ورا بعض بدون تأخير بينها (تبان كمجموعة)
     for (const f of files) {
       const media = MessageMedia.fromFilePath(path.join(dir, f));
       await client.sendMessage(chatId, media);
-      await humanDelay(900, 2000); // فاصل بشري بين الصور
     }
     console.log(`[صور] أُرسلت ${files.length} صورة (${key}) إلى ${phone}`);
   } catch (e) {
