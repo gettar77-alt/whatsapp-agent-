@@ -31,10 +31,18 @@
     }
 
     .maha-bar {
-      background: #e8f5e9; padding: 11px 20px;
-      display: flex; align-items: center; gap: 9px;
-      font-size: 13px; color: #2e7d32; border-bottom: 1px solid #c8e6c9;
+      padding: 11px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; border-bottom: 1px solid #c8e6c9;
     }
+    .maha-bar.on  { background: #e8f5e9; color: #2e7d32; border-bottom-color: #c8e6c9; }
+    .maha-bar.off { background: #fdecea; color: #c62828; border-bottom-color: #f5c6cb; }
+    .maha-toggle {
+      border: none; padding: 8px 18px; border-radius: 20px;
+      font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; color: #fff;
+    }
+    .on-btn  { background: #43a047; }
+    .off-btn { background: #e53935; }
     .dot {
       width: 9px; height: 9px; background: #43a047; border-radius: 50%;
       animation: pulse 1.8s infinite; flex-shrink: 0;
@@ -212,10 +220,22 @@
   </div>
 </div>
 
-<!-- بادج مها -->
-<div class="maha-bar">
-  <div class="dot"></div>
-  مها متصلة — أي تغيير يظهر عندها فوراً
+<!-- تشغيل/إيقاف مها -->
+<div class="maha-bar {{ 'on' if maha_on else 'off' }}">
+  <div style="display:flex; align-items:center; gap:9px;">
+    {% if maha_on %}<div class="dot"></div>{% endif %}
+    <span>{{ 'مها تشتغل الحين وترد على العملاء' if maha_on else 'مها متوقفة — ما ترد على أحد' }}</span>
+  </div>
+  {% if maha_on %}
+  <form method="post" action="/admin/maha/off" style="margin:0;"
+        onsubmit="return confirm('تبي توقف مها؟ بتوقف ترد على العملاء لين تشغّلها')">
+    <button type="submit" class="maha-toggle off-btn">إيقاف</button>
+  </form>
+  {% else %}
+  <form method="post" action="/admin/maha/on" style="margin:0;">
+    <button type="submit" class="maha-toggle on-btn">تشغيل</button>
+  </form>
+  {% endif %}
 </div>
 
 <!-- روابط سريعة -->

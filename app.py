@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 import config
@@ -31,6 +32,18 @@ def _log_handoff(phone: str, message: str):
     os.makedirs(config.LOG_DIR, exist_ok=True)
     with open(config.HANDOFF_LOG_FILE, "a", encoding="utf-8") as f:
         f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] {phone}: {message}\n")
+
+
+def _bridge_active() -> bool:
+    """هل خدمة مها (الجسر) شغّالة الآن."""
+    try:
+        r = subprocess.run(
+            ["systemctl", "is-active", "maha-bridge"],
+            capture_output=True, text=True, timeout=5,
+        )
+        return r.stdout.strip() == "active"
+    except Exception:
+        return False
 
 
 # =============================
@@ -147,7 +160,21 @@ def admin():
     if not session.get("admin"):
         return render_template("admin_login.html", error=error)
     data = _load_apartments()
-    return render_template("admin.html", units=data["الوحدات"])
+    return render_template("admin.html", units=data["الوحدات"], maha_on=_bridge_active())
+
+
+@app.route("/admin/maha/<action>", methods=["POST"])
+def admin_maha(action):
+    if not session.get("admin"):
+        return redirect(url_for("admin"))
+    try:
+        if action == "on":
+            subprocess.run(["systemctl", "start", "maha-bridge"], timeout=10)
+        elif action == "off":
+            subprocess.run(["systemctl", "stop", "maha-bridge"], timeout=10)
+    except Exception:
+        pass
+    return redirect(url_for("admin"))
 
 
 @app.route("/admin/conversations")
