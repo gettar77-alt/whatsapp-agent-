@@ -83,14 +83,14 @@ async function sendPhotos(chatId, key, phone) {
 }
 
 // تنبيه المالك لما عميل يطلب التحويل (يُرسل لرقم المالك فقط)
-async function alertOwner(customerPhone) {
+// summary = ملخص مختصر لطلب العميل تكتبه مها (اختياري)
+async function alertOwner(customerPhone, summary) {
   if (!OWNER_PHONE) return;
   try {
     const jid = OWNER_PHONE.replace(/\D/g, "") + "@c.us";
-    await client.sendMessage(
-      jid,
-      `تنبيه من مها: عميل يبي يتواصل معك\nرقم العميل: ${customerPhone}`
-    );
+    let body = `تنبيه من مها: عميل يبي يتواصل معك\nرقم العميل: ${customerPhone}`;
+    if (summary) body += `\nالطلب: ${summary}`;
+    await client.sendMessage(jid, body);
     console.log(`[تحويل] نُبّه المالك بخصوص ${customerPhone}`);
   } catch (e) {
     console.error("خطأ في تنبيه المالك:", e.message);
@@ -134,9 +134,12 @@ client.on("message", async (msg) => {
 
     // 6) استخراج العلامات: التحويل للمالك [[handoff]] وصور الشقق [[photos:KEY]]
     let handoff = false;
-    if (reply.includes("[[handoff]]")) {
+    let handoffSummary = "";
+    const hMark = reply.match(/\[\[handoff(?::([^\]]*))?\]\]/);
+    if (hMark) {
       handoff = true;
-      reply = reply.replace("[[handoff]]", "").trim();
+      handoffSummary = (hMark[1] || "").trim();
+      reply = reply.replace(hMark[0], "").trim();
     }
     let photoKey = null;
     const mark = reply.match(/\[\[photos:([^\]]+)\]\]/);
@@ -162,7 +165,7 @@ client.on("message", async (msg) => {
 
     // 9) نبّه المالك إن وافق العميل على التحويل
     if (handoff) {
-      await alertOwner(phone);
+      await alertOwner(phone, handoffSummary);
     }
   } catch (e) {
     console.error("خطأ في معالجة رسالة:", e.message);
