@@ -27,6 +27,12 @@ HISTORY_LIMIT       = int(os.getenv("HISTORY_LIMIT", "20"))
 CLAUDE_TEMPERATURE  = float(os.getenv("CLAUDE_TEMPERATURE", "0.6"))
 CLAUDE_MAX_TOKENS   = int(os.getenv("CLAUDE_MAX_TOKENS", "1024"))
 
+# اعتبار العميل "راجع" لو رجع بعد هذا العدد من الساعات من آخر نشاط
+RETURNING_GAP_HOURS = float(os.getenv("RETURNING_GAP_HOURS", "3"))
+# المتابعة لو سكت العميل: نطاق الصمت (بالساعات) اللي نرسل فيه رسالة تذكير
+FOLLOWUP_MIN_HOURS  = float(os.getenv("FOLLOWUP_MIN_HOURS", "3"))
+FOLLOWUP_MAX_HOURS  = float(os.getenv("FOLLOWUP_MAX_HOURS", "24"))
+
 # ===== مسارات الملفات =====
 BASE_DIR            = os.path.dirname(os.path.abspath(__file__))
 SYSTEM_PROMPT_FILE  = os.path.join(BASE_DIR, "system_prompt.txt")

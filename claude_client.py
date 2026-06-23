@@ -55,13 +55,24 @@ def _build_system_prompt() -> str:
     )
 
 
-def get_reply(history: list) -> str:
+_RETURNING_NOTE = (
+    "\n\n===== ملاحظة عن هذا العميل =====\n"
+    "هذا العميل تكلّم معك سابقاً ورجع بعد فترة. رحّبي فيه كعميل راجع بشكل ودّي "
+    "ومختصر (مثل: هلا فيك مرة ثانية / حياك الله، نوّري) بدون ما تعيدين التعريف "
+    "الرسمي الكامل من جديد، وكمّلي معاه على طول."
+)
+
+
+def get_reply(history: list, returning: bool = False) -> str:
     """
     إرسال تاريخ المحادثة إلى Claude والحصول على نص الرد.
     history: قائمة رسائل بصيغة [{"role": "user"/"assistant", "content": "..."}]
+    returning: هل هذا عميل رجع بعد فترة (يأثر على التحية).
     تُعيد: نص رد الايجنت.
     """
     system_prompt = _build_system_prompt()
+    if returning:
+        system_prompt += _RETURNING_NOTE
 
     response = _client.messages.create(
         model=config.CLAUDE_MODEL,            # اسم الموديل من الإعدادات

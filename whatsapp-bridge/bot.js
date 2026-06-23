@@ -23,6 +23,11 @@ const SESSION_PATH =
 const MEDIA_DIR = process.env.MEDIA_DIR || "/opt/maha/media";
 // رقم المالك لتنبيهه عند طلب التحويل — يُقرأ من .env، ولا يُرسل لأي عميل أبداً
 const OWNER_PHONE = process.env.OWNER_PHONE || "";
+// متابعة العميل اللي سكت — رابط العقل + توكن داخلي + كل كم نتحقق
+const FOLLOWUP_URL =
+  process.env.FOLLOWUP_URL || "http://127.0.0.1:5000/followups";
+const INTERNAL_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "";
+const FOLLOWUP_EVERY_MS = 15 * 60 * 1000; // كل ربع ساعة
 
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
@@ -50,10 +55,31 @@ client.on("qr", (qr) => {
 });
 
 client.on("authenticated", () => console.log("تم التوثيق"));
-client.on("ready", () =>
-  console.log("مها متصلة وجاهزة — ترد على الأرقام غير المحفوظة فقط")
-);
+client.on("ready", () => {
+  console.log("مها متصلة وجاهزة — ترد على الأرقام غير المحفوظة فقط");
+  // نبدأ دورة متابعة العملاء اللي سكتوا
+  setInterval(runFollowups, FOLLOWUP_EVERY_MS);
+});
 client.on("disconnected", (r) => console.log("انقطع الاتصال:", r));
+
+// ------- متابعة العميل اللي سكت -------
+async function runFollowups() {
+  try {
+    const res = await axios.get(FOLLOWUP_URL, {
+      params: { token: INTERNAL_TOKEN },
+      timeout: 30000,
+    });
+    const items = (res.data && res.data.items) || [];
+    for (const it of items) {
+      const jid = String(it.phone).replace(/\D/g, "") + "@c.us";
+      await client.sendMessage(jid, it.message);
+      console.log(`[متابعة] أُرسلت متابعة إلى ${it.phone}`);
+      await humanDelay(1500, 4000);
+    }
+  } catch (e) {
+    console.error("خطأ في المتابعة:", e.message);
+  }
+}
 
 function humanDelay(minMs, maxMs) {
   return new Promise((res) => setTimeout(res, minMs + Math.random() * (maxMs - minMs)));
@@ -120,8 +146,13 @@ client.on("message", async (msg) => {
     const text = (msg.body || "").trim();
     if (!text) return;
 
-    // 4) تأخير بشري قبل الرد (تقرأ الرسالة)
-    await humanDelay(2000, 6000);
+    const chat = await msg.getChat();
+
+    // 4) تأخير قصير (تلاحظ الرسالة) ثم تعلّمها كمقروءة (علامة القراءة الزرقاء)
+    await humanDelay(1500, 4000);
+    try {
+      await chat.sendSeen();
+    } catch (e) {}
 
     // 5) اسأل عقل مها عن الرد
     const res = await axios.post(
@@ -147,8 +178,6 @@ client.on("message", async (msg) => {
       photoKey = mark[1].trim();
       reply = reply.replace(mark[0], "").trim();
     }
-
-    const chat = await msg.getChat();
 
     // 7) أرسل النص على شكل رسائل قصيرة متتابعة (إحساس إنسان حقيقي)
     if (reply) {

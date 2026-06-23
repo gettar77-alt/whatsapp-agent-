@@ -1,12 +1,21 @@
 import json
 import os
+import random
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 import config
 import database
 import whatsapp
 from claude_client import get_reply
+
+# رسائل متابعة لطيفة للعميل اللي سكت (تُختار عشوائياً للتنويع)
+FOLLOWUP_MESSAGES = [
+    "لا زلت بخدمتك لو احتجت أي شي عن الشقق",
+    "موجودة لو عندك أي استفسار ثاني",
+    "لو حاب نكمل أنا حاضرة، تأمر بأي خدمة",
+    "حابة أتأكد إنك حصلت اللي تحتاجه، وأي سؤال أنا بخدمتك",
+]
 
 app = Flask(__name__)
 app.secret_key = config.ADMIN_PASSWORD + "_secret"
@@ -73,16 +82,43 @@ def chat():
     if not user_text:
         return jsonify({"reply": ""}), 400
 
+    # هل رجع العميل بعد فترة صمت؟ (نتحقق قبل حفظ الرسالة الحالية)
+    returning = False
+    last_activity = database.get_last_activity(session_id)
+    if last_activity:
+        try:
+            gap = datetime.now() - datetime.fromisoformat(last_activity)
+            returning = gap >= timedelta(hours=config.RETURNING_GAP_HOURS)
+        except Exception:
+            returning = False
+
     database.save_message(session_id, "user", user_text)
     history = database.get_history(session_id, config.HISTORY_LIMIT)
 
     try:
-        reply = get_reply(history)
+        reply = get_reply(history, returning=returning)
     except Exception:
         reply = "عذراً، حدث خطأ مؤقت. حاول مرة ثانية."
 
     database.save_message(session_id, "assistant", reply)
     return jsonify({"reply": reply, "length": len(reply)})
+
+
+@app.route("/followups", methods=["GET"])
+def followups():
+    """يرجّع قائمة العملاء اللي سكتوا ويحتاجون رسالة متابعة (يستدعيه الجسر دورياً)."""
+    if request.args.get("token") != config.WHATSAPP_VERIFY_TOKEN:
+        return jsonify({"items": []}), 403
+    phones = database.get_silent_customers(
+        config.FOLLOWUP_MIN_HOURS, config.FOLLOWUP_MAX_HOURS
+    )
+    items = []
+    for phone in phones:
+        message = random.choice(FOLLOWUP_MESSAGES)
+        database.mark_followup(phone)
+        database.save_message(phone, "assistant", message)
+        items.append({"phone": phone, "message": message})
+    return jsonify({"items": items})
 
 
 @app.route("/reset", methods=["POST"])
