@@ -12,7 +12,8 @@ claude_client.py
 أو بيانات الشقق يظهر أثره فوراً دون إعادة تشغيل أو لمس الكود.
 """
 
-from datetime import datetime, timedelta, timezone
+import json
+from datetime import date, datetime, timedelta, timezone
 
 import anthropic
 
@@ -36,22 +37,71 @@ def _today_line() -> str:
     )
 
 
+def _availability_block(apartments: dict) -> str:
+    """
+    نحسب التوفر آلياً (بالكود) ونقدّمه جاهزاً للنموذج عشان الدقة 100%:
+      - مرجع الأيام القادمة (اسم اليوم + التاريخ) لفهم بكرا/الخميس بدقة
+      - الأيام المحجوزة لكل شقة من قائمة "الأيام_المقفلة"
+    """
+    today = datetime.now(_KSA).date()
+    lines = ["===== مرجع الأيام القادمة (لتحديد التاريخ بدقة تامة) ====="]
+    for i in range(30):
+        d = today + timedelta(days=i)
+        tag = ""
+        if i == 0:
+            tag = " ← اليوم"
+        elif i == 1:
+            tag = " ← بكرا"
+        elif i == 2:
+            tag = " ← بعد بكرا"
+        lines.append(f"{_AR_WEEKDAYS[d.weekday()]} {d.isoformat()}{tag}")
+
+    lines.append("")
+    lines.append(
+        "===== حالة الحجوزات من لوحة الإدارة (محسوبة آلياً — اعتمدي عليها حرفياً) ====="
+    )
+    lines.append("القاعدة: أي يوم مو مذكور إنه محجوز لشقة معينة = متاح لها.")
+    for unit in apartments.get("الوحدات", []):
+        name = unit.get("الاسم", "شقة")
+        locked = sorted(unit.get("الأيام_المقفلة", []) or [])
+        upcoming = [ds for ds in locked if ds >= today.isoformat()]
+        if upcoming:
+            parts = []
+            for ds in upcoming:
+                try:
+                    dd = date.fromisoformat(ds)
+                    parts.append(f"{_AR_WEEKDAYS[dd.weekday()]} {ds}")
+                except Exception:
+                    parts.append(ds)
+            lines.append(f"- {name}: محجوز في " + "، ".join(parts))
+        else:
+            lines.append(f"- {name}: كل الأيام القادمة متاحة")
+    return "\n".join(lines)
+
+
 def _build_system_prompt() -> str:
     """قراءة شخصية الايجنت وبيانات الشقق ودمجهما في نص تعليمات واحد."""
     with open(config.SYSTEM_PROMPT_FILE, encoding="utf-8") as f:
         persona = f.read().strip()
 
     with open(config.APARTMENTS_FILE, encoding="utf-8") as f:
-        apartments_data = f.read().strip()
+        apartments_raw = f.read().strip()
 
-    # نلصق تاريخ اليوم + بيانات الشقق أسفل شخصية الايجنت ليعتمد عليها في إجاباته
+    try:
+        apartments = json.loads(apartments_raw)
+    except Exception:
+        apartments = {}
+
+    # نلصق تاريخ اليوم + جدول التوفر المحسوب + بيانات الشقق أسفل الشخصية
     return (
         persona
         + "\n\n"
         + _today_line()
         + "\n\n"
+        + _availability_block(apartments)
+        + "\n\n"
         + "===== بيانات الشقق والأسعار (اعتمد عليها فقط في إجاباتك) =====\n"
-        + apartments_data
+        + apartments_raw
     )
 
 
