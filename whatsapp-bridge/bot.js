@@ -21,6 +21,8 @@ const SESSION_PATH =
   process.env.SESSION_PATH || "/opt/maha/whatsapp-bridge/.wwebjs_auth";
 // مجلد صور الشقق (كل شقة في مجلد فرعي باسمها)
 const MEDIA_DIR = process.env.MEDIA_DIR || "/opt/maha/media";
+// رقم المالك لتنبيهه عند طلب التحويل — يُقرأ من .env، ولا يُرسل لأي عميل أبداً
+const OWNER_PHONE = process.env.OWNER_PHONE || "";
 
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
@@ -80,6 +82,21 @@ async function sendPhotos(chatId, key, phone) {
   }
 }
 
+// تنبيه المالك لما عميل يطلب التحويل (يُرسل لرقم المالك فقط)
+async function alertOwner(customerPhone) {
+  if (!OWNER_PHONE) return;
+  try {
+    const jid = OWNER_PHONE.replace(/\D/g, "") + "@c.us";
+    await client.sendMessage(
+      jid,
+      `تنبيه من مها: عميل يبي يتواصل معك\nرقم العميل: ${customerPhone}`
+    );
+    console.log(`[تحويل] نُبّه المالك بخصوص ${customerPhone}`);
+  } catch (e) {
+    console.error("خطأ في تنبيه المالك:", e.message);
+  }
+}
+
 // ------- معالجة الرسائل الواردة -------
 client.on("message", async (msg) => {
   try {
@@ -115,7 +132,12 @@ client.on("message", async (msg) => {
     let reply = res.data && res.data.reply ? res.data.reply : "";
     if (!reply) return;
 
-    // 6) استخراج علامة الصور إن وجدت: [[photos:KEY]]
+    // 6) استخراج العلامات: التحويل للمالك [[handoff]] وصور الشقق [[photos:KEY]]
+    let handoff = false;
+    if (reply.includes("[[handoff]]")) {
+      handoff = true;
+      reply = reply.replace("[[handoff]]", "").trim();
+    }
     let photoKey = null;
     const mark = reply.match(/\[\[photos:([^\]]+)\]\]/);
     if (mark) {
@@ -125,7 +147,7 @@ client.on("message", async (msg) => {
 
     const chat = await msg.getChat();
 
-    // 7) أرسل النص (إن بقي نص بعد إزالة العلامة)
+    // 7) أرسل النص (إن بقي نص بعد إزالة العلامات)
     if (reply) {
       await chat.sendStateTyping();
       await humanDelay(1500, Math.min(1500 + reply.length * 60, 9000));
@@ -133,9 +155,14 @@ client.on("message", async (msg) => {
       console.log(`[رد] أُرسل إلى ${phone}`);
     }
 
-    // 8) ثم أرسل الصور إن طلبها العميل
+    // 8) أرسل الصور إن طلبها العميل
     if (photoKey) {
       await sendPhotos(msg.from, photoKey, phone);
+    }
+
+    // 9) نبّه المالك إن وافق العميل على التحويل
+    if (handoff) {
+      await alertOwner(phone);
     }
   } catch (e) {
     console.error("خطأ في معالجة رسالة:", e.message);
