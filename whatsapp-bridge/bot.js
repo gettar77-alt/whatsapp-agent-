@@ -8,15 +8,19 @@
 //  يعيد استخدام "عقل مها" (Claude + الشخصية + قاعدة البيانات) عبر /chat.
 // ============================================================
 
-const { Client, LocalAuth } = require("whatsapp-web.js");
+const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 // عقل مها (خادم فلاسك المحلي) — يرجّع الرد بالنجدي
 const BRAIN_URL = process.env.BRAIN_URL || "http://127.0.0.1:5000/chat";
 // مكان حفظ جلسة الربط (تبقى بعد إعادة التشغيل بدون إعادة مسح QR)
 const SESSION_PATH =
   process.env.SESSION_PATH || "/opt/maha/whatsapp-bridge/.wwebjs_auth";
+// مجلد صور الشقق (كل شقة في مجلد فرعي باسمها)
+const MEDIA_DIR = process.env.MEDIA_DIR || "/opt/maha/media";
 
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: SESSION_PATH }),
@@ -53,6 +57,29 @@ function humanDelay(minMs, maxMs) {
   return new Promise((res) => setTimeout(res, minMs + Math.random() * (maxMs - minMs)));
 }
 
+// إرسال صور شقة معيّنة (كل الصور داخل /opt/maha/media/<key>/)
+async function sendPhotos(chatId, key, phone) {
+  try {
+    const dir = path.join(MEDIA_DIR, key);
+    if (!fs.existsSync(dir)) {
+      console.log(`[صور] المجلد غير موجود: ${dir}`);
+      return;
+    }
+    const files = fs
+      .readdirSync(dir)
+      .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
+      .sort();
+    for (const f of files) {
+      const media = MessageMedia.fromFilePath(path.join(dir, f));
+      await client.sendMessage(chatId, media);
+      await humanDelay(900, 2000); // فاصل بشري بين الصور
+    }
+    console.log(`[صور] أُرسلت ${files.length} صورة (${key}) إلى ${phone}`);
+  } catch (e) {
+    console.error("خطأ في إرسال الصور:", e.message);
+  }
+}
+
 // ------- معالجة الرسائل الواردة -------
 client.on("message", async (msg) => {
   try {
@@ -85,16 +112,31 @@ client.on("message", async (msg) => {
       { message: text, session: phone },
       { timeout: 60000 }
     );
-    const reply = res.data && res.data.reply ? res.data.reply : "";
+    let reply = res.data && res.data.reply ? res.data.reply : "";
     if (!reply) return;
 
-    // 6) مؤشر "يكتب..." + تأخير يتناسب مع طول الرد
-    const chat = await msg.getChat();
-    await chat.sendStateTyping();
-    await humanDelay(1500, Math.min(1500 + reply.length * 60, 9000));
+    // 6) استخراج علامة الصور إن وجدت: [[photos:KEY]]
+    let photoKey = null;
+    const mark = reply.match(/\[\[photos:([^\]]+)\]\]/);
+    if (mark) {
+      photoKey = mark[1].trim();
+      reply = reply.replace(mark[0], "").trim();
+    }
 
-    await client.sendMessage(msg.from, reply);
-    console.log(`[رد] أُرسل إلى ${phone}`);
+    const chat = await msg.getChat();
+
+    // 7) أرسل النص (إن بقي نص بعد إزالة العلامة)
+    if (reply) {
+      await chat.sendStateTyping();
+      await humanDelay(1500, Math.min(1500 + reply.length * 60, 9000));
+      await client.sendMessage(msg.from, reply);
+      console.log(`[رد] أُرسل إلى ${phone}`);
+    }
+
+    // 8) ثم أرسل الصور إن طلبها العميل
+    if (photoKey) {
+      await sendPhotos(msg.from, photoKey, phone);
+    }
   } catch (e) {
     console.error("خطأ في معالجة رسالة:", e.message);
   }
