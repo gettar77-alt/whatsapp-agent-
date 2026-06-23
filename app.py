@@ -163,6 +163,37 @@ def admin():
     return render_template("admin.html", units=data["الوحدات"], maha_on=_bridge_active())
 
 
+@app.route("/admin/day/toggle", methods=["POST"])
+def admin_day_toggle():
+    """قفل/فتح يوم واحد مستقل (ميلادي) لشقة معيّنة."""
+    if not session.get("admin"):
+        return jsonify({"error": "auth"}), 403
+    payload = request.get_json(force=True, silent=True) or {}
+    try:
+        unit_idx = int(payload.get("unit"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "bad unit"}), 400
+    date = (payload.get("date") or "").strip()
+    if not date:
+        return jsonify({"error": "bad date"}), 400
+
+    data = _load_apartments()
+    units = data["الوحدات"]
+    if unit_idx < 0 or unit_idx >= len(units):
+        return jsonify({"error": "range"}), 400
+
+    days = units[unit_idx].setdefault("الأيام_المقفلة", [])
+    if date in days:
+        days.remove(date)
+        locked = False
+    else:
+        days.append(date)
+        days.sort()
+        locked = True
+    _save_apartments(data)
+    return jsonify({"locked": locked})
+
+
 @app.route("/admin/maha/<action>", methods=["POST"])
 def admin_maha(action):
     if not session.get("admin"):
