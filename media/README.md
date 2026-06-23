@@ -5,6 +5,7 @@
 | الشقة | المجلد | علامة مها |
 |---|---|---|
 | بينت هاوس دورين (الأكبر) | `media/penthouse/` | `[[photos:penthouse]]` |
+| شقة اقتصادية | `media/economy/` | `[[photos:economy]]` |
 
 ## كيف تضيف صور لشقة
 1. ارفع الصور (jpg / png) داخل مجلد الشقة، مثلاً `media/penthouse/`
