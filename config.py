@@ -22,7 +22,7 @@ WHATSAPP_VERIFY_TOKEN = _require("WHATSAPP_VERIFY_TOKEN")
 # ===== إعدادات اختيارية =====
 ADMIN_PASSWORD      = os.getenv("ADMIN_PASSWORD", "admin1234")
 OWNER_PHONE         = os.getenv("OWNER_PHONE", "")   # رقم المالك لاستقبال إشعارات التحويل
-CLAUDE_MODEL        = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5")
+CLAUDE_MODEL        = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-6")
 HISTORY_LIMIT       = int(os.getenv("HISTORY_LIMIT", "20"))
 CLAUDE_TEMPERATURE  = float(os.getenv("CLAUDE_TEMPERATURE", "0.6"))
 CLAUDE_MAX_TOKENS   = int(os.getenv("CLAUDE_MAX_TOKENS", "1024"))

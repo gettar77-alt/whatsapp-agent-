@@ -150,12 +150,20 @@ client.on("message", async (msg) => {
 
     const chat = await msg.getChat();
 
-    // 7) أرسل النص (إن بقي نص بعد إزالة العلامات)
+    // 7) أرسل النص على شكل رسائل قصيرة متتابعة (إحساس إنسان حقيقي)
     if (reply) {
-      await chat.sendStateTyping();
-      await humanDelay(1500, Math.min(1500 + reply.length * 60, 9000));
-      await client.sendMessage(msg.from, reply);
-      console.log(`[رد] أُرسل إلى ${phone}`);
+      // نقسّم الرد عند السطور الفارغة — كل مقطع رسالة مستقلة
+      const chunks = reply
+        .split(/\n{2,}/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      for (const chunk of chunks) {
+        await chat.sendStateTyping();
+        // تأخير يحاكي الكتابة: يطول مع طول الرسالة
+        await humanDelay(1200, Math.min(1200 + chunk.length * 55, 6000));
+        await client.sendMessage(msg.from, chunk);
+      }
+      console.log(`[رد] أُرسل إلى ${phone} (${chunks.length} رسالة)`);
     }
 
     // 8) أرسل الصور إن طلبها العميل

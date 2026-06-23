@@ -64,10 +64,17 @@ def get_reply(history: list) -> str:
     system_prompt = _build_system_prompt()
 
     response = _client.messages.create(
-        model=config.CLAUDE_MODEL,            # اسم الموديل من الإعدادات (claude-haiku-4-5)
+        model=config.CLAUDE_MODEL,            # اسم الموديل من الإعدادات
         max_tokens=config.CLAUDE_MAX_TOKENS,  # أقصى طول للرد
-        temperature=config.CLAUDE_TEMPERATURE,  # 0.6 = ردود طبيعية متزنة
-        system=system_prompt,                 # شخصية الايجنت + بيانات الشقق
+        temperature=config.CLAUDE_TEMPERATURE,  # طبيعية متزنة
+        # نخزّن التعليمات الثابتة (الشخصية + بيانات الشقق) مؤقتاً لتخفيض التكلفة
+        system=[
+            {
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ],
         messages=history,                     # تاريخ المحادثة كاملاً
     )
 
