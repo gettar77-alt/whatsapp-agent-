@@ -37,45 +37,52 @@ def _today_line() -> str:
     )
 
 
+def _short_name(unit: dict) -> str:
+    """اسم مختصر وثابت للشقة عشان الجدول يكون واضح وما يلتبس."""
+    name = unit.get("الاسم", "")
+    if "بينت" in name or "بنت هاوس" in name or "دورين" in name:
+        return "البينت هاوس"
+    if "اقتصادي" in name:
+        return "الشقة الاقتصادية"
+    if "جناح" in name:
+        return "الجناح الفاخر"
+    return name or "شقة"
+
+
 def _availability_block(apartments: dict) -> str:
     """
-    نحسب التوفر آلياً (بالكود) ونقدّمه جاهزاً للنموذج عشان الدقة 100%:
-      - مرجع الأيام القادمة (اسم اليوم + التاريخ) لفهم بكرا/الخميس بدقة
-      - الأيام المحجوزة لكل شقة من قائمة "الأيام_المقفلة"
+    نحسب التوفر آلياً (بالكود) ونقدّمه كشبكة صريحة عشان الدقة 100%:
+    لكل يوم سطر، وداخله حالة كل شقة مكتوبة صراحة (متاح/محجوز).
+    النموذج ما يستنتج شي — بس يلقى سطر اليوم ويقرأ حالة الشقة المطلوبة.
     """
     today = datetime.now(_KSA).date()
-    lines = ["===== مرجع الأيام القادمة (لتحديد التاريخ بدقة تامة) ====="]
-    for i in range(30):
+    units = apartments.get("الوحدات", [])
+    # لكل وحدة: اسمها المختصر + مجموعة أيامها المقفلة (للبحث السريع)
+    prepared = [(_short_name(u), set(u.get("الأيام_المقفلة", []) or [])) for u in units]
+
+    lines = [
+        "===== جدول التوفر الرسمي (المصدر الوحيد للتوفر — اقرئي منه حرفياً) =====",
+        f"اليوم هو: {_AR_WEEKDAYS[today.weekday()]} {today.isoformat()}",
+        "كل سطر = يوم، وجنب كل شقة حالتها (متاح = فاضية تنحجز، محجوز = مأخوذة):",
+        "",
+    ]
+    horizon = 60  # نغطي شهرين قدّام
+    for i in range(horizon):
         d = today + timedelta(days=i)
+        ds = d.isoformat()
         tag = ""
         if i == 0:
-            tag = " ← اليوم"
+            tag = " (اليوم)"
         elif i == 1:
-            tag = " ← بكرا"
+            tag = " (بكرا)"
         elif i == 2:
-            tag = " ← بعد بكرا"
-        lines.append(f"{_AR_WEEKDAYS[d.weekday()]} {d.isoformat()}{tag}")
-
-    lines.append("")
-    lines.append(
-        "===== حالة الحجوزات من لوحة الإدارة (محسوبة آلياً — اعتمدي عليها حرفياً) ====="
-    )
-    lines.append("القاعدة: أي يوم مو مذكور إنه محجوز لشقة معينة = متاح لها.")
-    for unit in apartments.get("الوحدات", []):
-        name = unit.get("الاسم", "شقة")
-        locked = sorted(unit.get("الأيام_المقفلة", []) or [])
-        upcoming = [ds for ds in locked if ds >= today.isoformat()]
-        if upcoming:
-            parts = []
-            for ds in upcoming:
-                try:
-                    dd = date.fromisoformat(ds)
-                    parts.append(f"{_AR_WEEKDAYS[dd.weekday()]} {ds}")
-                except Exception:
-                    parts.append(ds)
-            lines.append(f"- {name}: محجوز في " + "، ".join(parts))
-        else:
-            lines.append(f"- {name}: كل الأيام القادمة متاحة")
+            tag = " (بعد بكرا)"
+        statuses = [
+            f"{name} = {'محجوز' if ds in locked else 'متاح'}" for name, locked in prepared
+        ]
+        lines.append(
+            f"{_AR_WEEKDAYS[d.weekday()]} {ds}{tag}  ←  " + "  |  ".join(statuses)
+        )
     return "\n".join(lines)
 
 
