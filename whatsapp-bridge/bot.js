@@ -182,10 +182,12 @@ client.on("message", async (msg) => {
     // 7) أرسل النص على شكل رسائل قصيرة متتابعة (إحساس إنسان حقيقي)
     if (reply) {
       // نقسّم الرد عند السطور الفارغة — كل مقطع رسالة مستقلة
-      const chunks = reply
+      let chunks = reply
         .split(/\n{2,}/)
         .map((s) => s.trim())
         .filter(Boolean);
+      // امنع إرسال نفس الرسالة مرتين في نفس الرد (نشيل المكرر ونبقي أول ظهور)
+      chunks = chunks.filter((c, idx) => chunks.indexOf(c) === idx);
       for (const chunk of chunks) {
         await chat.sendStateTyping();
         // تأخير يحاكي الكتابة: يطول مع طول الرسالة
