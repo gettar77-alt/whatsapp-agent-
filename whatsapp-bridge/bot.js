@@ -114,6 +114,40 @@ function humanDelay(minMs, maxMs) {
   return new Promise((res) => setTimeout(res, minMs + Math.random() * (maxMs - minMs)));
 }
 
+// انتظار مدة محسوبة مسبقاً
+function sleep(ms) {
+  return new Promise((res) => setTimeout(res, ms));
+}
+
+// رقم عشوائي ضمن مدى (تشويش بشري — لا نكرر نفس الرقم)
+function rand(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+// الساعة الحالية بتوقيت الرياض (UTC+3)
+function ksaHour() {
+  return (new Date().getUTCHours() + 3) % 24;
+}
+
+// معامل البطء حسب وقت اليوم: نهاراً حاضرة وسريعة، بالليل المتأخر أبطأ
+function nightFactor() {
+  const h = ksaHour();
+  if (h >= 1 && h < 7) return 2.2; // الليل المتأخر — أبطأ بوضوح (إحساس النوم)
+  if (h < 1) return 1.6; // بعد منتصف الليل
+  if (h >= 23) return 1.5; // قبيل منتصف الليل
+  return 1.0; // نهاراً
+}
+
+// وقت الرياض بصيغة مقروءة (يُستخدم في تنبيه المالك)
+function ksaTimeString() {
+  const now = new Date(Date.now() + 3 * 3600 * 1000);
+  const p = (n) => String(n).padStart(2, "0");
+  return (
+    `${now.getUTCFullYear()}-${p(now.getUTCMonth() + 1)}-${p(now.getUTCDate())} ` +
+    `${p(now.getUTCHours())}:${p(now.getUTCMinutes())}`
+  );
+}
+
 // إرسال صور شقة معيّنة (كل الصور داخل /opt/maha/media/<key>/)
 async function sendPhotos(chatId, key, phone) {
   try {
@@ -156,10 +190,15 @@ async function alertOwner(customerPhone, summary) {
   }
   try {
     const jid = toJid(OWNER_PHONE);
-    let body = `تنبيه من مها: عميل يبي يتواصل معك\nرقم العميل: ${customerPhone}`;
-    if (summary) body += `\nالطلب: ${summary}`;
+    // ما نخمّن الرقم — لو ما توفّر نكتب "غير متوفر"
+    const numLine = customerPhone ? `+${customerPhone}` : "غير متوفر";
+    let body =
+      `تنبيه من مها: عميل يبي يتواصل معك\n` +
+      `رقم العميل: ${numLine}\n` +
+      `الوقت: ${ksaTimeString()} (توقيت الرياض)`;
+    if (summary) body += `\nالتفاصيل: ${summary}`;
     await client.sendMessage(jid, body);
-    console.log(`[تحويل] نُبّه المالك بخصوص ${customerPhone}`);
+    console.log(`[تحويل] نُبّه المالك بخصوص ${numLine}`);
   } catch (e) {
     console.error("خطأ في تنبيه المالك:", e.message);
   }
@@ -185,18 +224,41 @@ client.on("message", async (msg) => {
     }
     console.log(`[وارد] رقم غير محفوظ: ${phone}`);
 
+    // رقم العميل الحقيقي (للتنبيه): نأخذه من جهة الاتصال لأنه أدق من معرّف
+    // المحادثة، ولا نخمّنه أبداً — لو ما عرفناه نتركه فاضي.
+    let customerNumber = "";
+    if (contact && contact.number) {
+      customerNumber = String(contact.number).replace(/\D/g, "");
+    } else if (
+      contact &&
+      contact.id &&
+      contact.id.user &&
+      /^\d{7,15}$/.test(contact.id.user)
+    ) {
+      customerNumber = contact.id.user;
+    } else if (msg.from.endsWith("@c.us")) {
+      customerNumber = phone.replace(/\D/g, "");
+    }
+
     const text = (msg.body || "").trim();
     if (!text) return;
 
     const chat = await msg.getChat();
+    const nf = nightFactor(); // معامل البطء حسب وقت اليوم
 
-    // 4) تأخير قصير (تلاحظ الرسالة) ثم تعلّمها كمقروءة (علامة القراءة الزرقاء)
-    await humanDelay(1500, 4000);
+    // 4) تأخير قراءة بشري (وأحياناً تكون مشغولة) ثم تعلّمها مقروءة
+    let readMs = rand(2000, 8000) * nf;
+    if (Math.random() < 0.1) readMs += rand(15000, 40000); // ~10%: كانت مشغولة
+    readMs = Math.min(readMs, 45000); // سقف أمان
+    await sleep(readMs);
     try {
       await chat.sendSeen();
     } catch (e) {}
 
-    // 5) اسأل عقل مها عن الرد
+    // 5) تأخير تفكير قصير قبل ما تبدأ ترد (استيعاب + صياغة)
+    await humanDelay(2000 * nf, 7000 * nf);
+
+    // 6) اسأل عقل مها عن الرد
     const res = await axios.post(
       BRAIN_URL,
       { message: text, session: phone },
@@ -221,7 +283,7 @@ client.on("message", async (msg) => {
       reply = reply.replace(mark[0], "").trim();
     }
 
-    // 7) أرسل النص على شكل رسائل قصيرة متتابعة (إحساس إنسان حقيقي)
+    // 8) أرسل النص رسائل متتابعة بإيقاع بشري (فاصل + يكتب الآن + مدة كتابة)
     if (reply) {
       // نقسّم الرد عند السطور الفارغة — كل مقطع رسالة مستقلة
       let chunks = reply
@@ -230,23 +292,32 @@ client.on("message", async (msg) => {
         .filter(Boolean);
       // امنع إرسال نفس الرسالة مرتين في نفس الرد (نشيل المكرر ونبقي أول ظهور)
       chunks = chunks.filter((c, idx) => chunks.indexOf(c) === idx);
-      for (const chunk of chunks) {
-        await chat.sendStateTyping();
-        // تأخير يحاكي الكتابة: يطول مع طول الرسالة
-        await humanDelay(1200, Math.min(1200 + chunk.length * 55, 6000));
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        // فاصل بين الرسالة والثانية (ما نرسلهم في نفس اللحظة أبداً)
+        if (i > 0) await humanDelay(900 * nf, 2500 * nf);
+        try {
+          await chat.sendStateTyping();
+        } catch (e) {}
+        // مدة الكتابة ≈ عدد الحروف ÷ (4–7 حرف/ثانية) + تشويش، بسقف 12 ثانية
+        const typeMs = Math.min(
+          (chunk.length / rand(4, 7)) * 1000 + rand(300, 1200),
+          12000
+        );
+        await sleep(typeMs);
         await client.sendMessage(msg.from, chunk);
       }
       console.log(`[رد] أُرسل إلى ${phone} (${chunks.length} رسالة)`);
     }
 
-    // 8) أرسل الصور إن طلبها العميل
+    // 9) أرسل الصور إن طلبها العميل
     if (photoKey) {
       await sendPhotos(msg.from, photoKey, phone);
     }
 
-    // 9) نبّه المالك إن وافق العميل على التحويل
+    // 10) نبّه المالك إن وافق العميل على التحويل (بالرقم الحقيقي للعميل)
     if (handoff) {
-      await alertOwner(phone, handoffSummary);
+      await alertOwner(customerNumber, handoffSummary);
     }
   } catch (e) {
     console.error("خطأ في معالجة رسالة:", e.message);
