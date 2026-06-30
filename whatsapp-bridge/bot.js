@@ -14,6 +14,35 @@ const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 
+// ------- تحميل متغيرات البيئة من ملف .env (نفس ملف العقل) -------
+// الجسر ما يعتمد على systemd عشان يقرأ .env — يقرأه بنفسه لضمان توفر
+// المتغيرات المهمة مثل OWNER_PHONE و WHATSAPP_VERIFY_TOKEN حتى لو ما مُرّرت للخدمة.
+(function loadEnv() {
+  try {
+    const envPath = process.env.ENV_FILE || path.join(__dirname, "..", ".env");
+    if (!fs.existsSync(envPath)) return;
+    for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+      const s = line.trim();
+      if (!s || s.startsWith("#")) continue;
+      const eq = s.indexOf("=");
+      if (eq === -1) continue;
+      const key = s.slice(0, eq).trim();
+      let val = s.slice(eq + 1).trim();
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
+        val = val.slice(1, -1);
+      }
+      // لا نطغى على متغير موجود مسبقاً (systemd له الأولوية)
+      if (key && !(key in process.env)) process.env[key] = val;
+    }
+    console.log("تم تحميل إعدادات .env في الجسر");
+  } catch (e) {
+    console.error("تعذّر قراءة .env في الجسر:", e.message);
+  }
+})();
+
 // عقل مها (خادم فلاسك المحلي) — يرجّع الرد بالنجدي
 const BRAIN_URL = process.env.BRAIN_URL || "http://127.0.0.1:5000/chat";
 // مكان حفظ جلسة الربط (تبقى بعد إعادة التشغيل بدون إعادة مسح QR)
@@ -108,12 +137,25 @@ async function sendPhotos(chatId, key, phone) {
   }
 }
 
+// تحويل رقم سعودي لأي صيغة إلى معرّف واتساب صحيح (966XXXXXXXXX@c.us)
+// يتقبّل: 05XXXXXXXX أو 5XXXXXXXX أو 9665XXXXXXXX أو 009665XXXXXXXX
+function toJid(num) {
+  let d = String(num || "").replace(/\D/g, "");
+  if (d.startsWith("00")) d = d.slice(2); // 00966... -> 966...
+  if (d.length === 10 && d.startsWith("05")) d = "966" + d.slice(1); // 05XXXXXXXX
+  else if (d.length === 9 && d.startsWith("5")) d = "966" + d; // 5XXXXXXXX
+  return d + "@c.us";
+}
+
 // تنبيه المالك لما عميل يطلب التحويل (يُرسل لرقم المالك فقط)
 // summary = ملخص مختصر لطلب العميل تكتبه مها (اختياري)
 async function alertOwner(customerPhone, summary) {
-  if (!OWNER_PHONE) return;
+  if (!OWNER_PHONE) {
+    console.error("[تحويل] OWNER_PHONE غير مضبوط — ما أقدر أنبّه المالك");
+    return;
+  }
   try {
-    const jid = OWNER_PHONE.replace(/\D/g, "") + "@c.us";
+    const jid = toJid(OWNER_PHONE);
     let body = `تنبيه من مها: عميل يبي يتواصل معك\nرقم العميل: ${customerPhone}`;
     if (summary) body += `\nالطلب: ${summary}`;
     await client.sendMessage(jid, body);
