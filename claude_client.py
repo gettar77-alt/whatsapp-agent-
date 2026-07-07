@@ -43,6 +43,9 @@ def _short_name(unit: dict) -> str:
     if "بينت" in name or "بنت هاوس" in name or "دورين" in name:
         return "البينت هاوس"
     if "اقتصادي" in name:
+        # نفرّق بين الاقتصادية الأولى والثانية عشان الجدول ما يلتبس
+        if "2" in name or "٢" in name:
+            return "الشقة الاقتصادية 2"
         return "الشقة الاقتصادية"
     if "جناح" in name:
         return "الجناح الفاخر"
