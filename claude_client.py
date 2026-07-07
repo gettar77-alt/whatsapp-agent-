@@ -49,6 +49,8 @@ def _short_name(unit: dict) -> str:
         return "الشقة الاقتصادية"
     if "جناح" in name:
         return "الجناح الفاخر"
+    if "مصعد" in name:
+        return "شقة المصعد الخاص"
     return name or "شقة"
 
 
