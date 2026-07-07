@@ -80,10 +80,24 @@
       width: 46px; height: 46px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
       font-size: 22px; font-weight: 900; color: #fff; flex-shrink: 0;
+      background: #607d8b;
     }
     .u0 .unit-num { background: #1565c0; }
     .u1 .unit-num { background: #6a1b9a; }
     .u2 .unit-num { background: #e65100; }
+    .u3 .unit-num { background: #00897b; }
+    .fazaa-card .unit-num { background: #c62828; }
+    .fazaa-card { border: 1.5px solid #ffcdd2; }
+
+    .group-title {
+      font-size: 15px; font-weight: 800; color: #075e54;
+      padding: 12px 6px 4px; display: flex; align-items: center; gap: 8px;
+    }
+    .group-title.fazaa { color: #c62828; margin-top: 6px; }
+    .gt-badge {
+      background: #ffebee; color: #c62828; font-size: 11px;
+      padding: 3px 10px; border-radius: 10px; font-weight: 700;
+    }
 
     .unit-name { font-size: 15px; font-weight: 700; color: #111; line-height: 1.3; }
     .unit-sub  { font-size: 12px; color: #aaa; margin-top: 3px; }
@@ -299,17 +313,13 @@
   </a>
 </div>
 
-<!-- بطاقات الشقق -->
-<div class="cards">
-
-{% for unit in units %}
-{% set unit_idx = loop.index0 %}
+<!-- بطاقة شقة (ماكرو مشترك للقوائم) -->
+{% macro unit_card(unit, unit_idx, num, is_fazaa=false) %}
 {% set uid = "u" ~ unit_idx %}
-
-<div class="unit-card u{{ unit_idx }}">
+<div class="unit-card u{{ unit_idx }}{% if is_fazaa %} fazaa-card{% endif %}">
 
   <div class="unit-header">
-    <div class="unit-num">{{ loop.index }}</div>
+    <div class="unit-num">{{ num }}</div>
     <div>
       <div class="unit-name">{{ unit["الاسم"] }}</div>
       <div class="unit-sub">
@@ -321,7 +331,7 @@
 
   <div class="unit-body">
 
-    <!-- تبويبات 3 -->
+    <!-- تبويبات: السعر + الحجز -->
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('{{ uid }}','prices',this)">الأسعار</button>
       <button class="tab-btn" onclick="switchTab('{{ uid }}','cal',this)">
@@ -332,7 +342,6 @@
     <!-- ===== تبويب الأسعار ===== -->
     <div id="{{ uid }}-prices" class="tab-content active">
 
-      <!-- عرض الأسعار الحالية -->
       <div class="prices-current">
         <div class="price-box">
           <div class="price-box-label">أيام الأسبوع</div>
@@ -353,7 +362,6 @@
 
       <hr class="divider"/>
 
-      <!-- فورم تعديل الأسعار -->
       <form method="POST" action="/admin/update-prices" onsubmit="showToast()">
         <input type="hidden" name="unit" value="{{ unit_idx }}"/>
 
@@ -395,7 +403,22 @@
 
   </div>
 </div>
-{% endfor %}
+{% endmacro %}
+
+<!-- بطاقات الشقق -->
+<div class="cards">
+
+  <div class="group-title">الشقق</div>
+  {% for x in main_units %}
+    {{ unit_card(x.unit, x.idx, loop.index) }}
+  {% endfor %}
+
+  {% if fazaa_units %}
+  <div class="group-title fazaa">فزعة <span class="gt-badge">تحكم بالسعر والحجز</span></div>
+  {% for x in fazaa_units %}
+    {{ unit_card(x.unit, x.idx, loop.index, true) }}
+  {% endfor %}
+  {% endif %}
 
 </div>
 

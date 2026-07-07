@@ -196,7 +196,13 @@ def admin():
     if not session.get("admin"):
         return render_template("admin_login.html", error=error)
     data = _load_apartments()
-    return render_template("admin.html", units=data["الوحدات"], maha_on=_bridge_active())
+    units = data["الوحدات"]
+    # نفصل مجموعة "فزعة" في قائمة لحالها بلوحة الإدارة (مع الحفاظ على رقم الوحدة الأصلي)
+    main_units  = [{"idx": i, "unit": u} for i, u in enumerate(units) if u.get("المجموعة") != "فزعة"]
+    fazaa_units = [{"idx": i, "unit": u} for i, u in enumerate(units) if u.get("المجموعة") == "فزعة"]
+    return render_template(
+        "admin.html", main_units=main_units, fazaa_units=fazaa_units, maha_on=_bridge_active()
+    )
 
 
 @app.route("/admin/day/toggle", methods=["POST"])

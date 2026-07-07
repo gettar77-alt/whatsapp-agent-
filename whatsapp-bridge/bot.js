@@ -212,8 +212,10 @@ client.on("message", async (msg) => {
     if (msg.from === "status@broadcast") return; // حالة
     if (msg.fromMe) return;
 
-    // 2) نص فقط (الوسائط نتجاهلها حالياً)
-    if (msg.type !== "chat") return;
+    // 2) نتعامل مع النص والوسائط (صورة/فيديو/ملف/صوت)؛ الإشعارات الأخرى نتجاهلها
+    const MEDIA_TYPES = ["image", "video", "document", "audio", "ptt"];
+    const isMedia = MEDIA_TYPES.includes(msg.type);
+    if (msg.type !== "chat" && !isMedia) return;
 
     // 3) القاعدة الذهبية: لو الرقم محفوظ كجهة اتصال → تجاهل تماماً
     const phone = msg.from.replace("@c.us", "");
@@ -240,7 +242,11 @@ client.on("message", async (msg) => {
       customerNumber = phone.replace(/\D/g, "");
     }
 
-    const text = (msg.body || "").trim();
+    // نص الرسالة — ولو كانت صورة/ملف نمرّرها للعقل كإشارة (مها ما تقدر تشوفها)
+    let text = (msg.body || "").trim();
+    if (isMedia) {
+      text = text ? text + "\n[العميل أرسل صورة]" : "[العميل أرسل صورة]";
+    }
     if (!text) return;
 
     const chat = await msg.getChat();
