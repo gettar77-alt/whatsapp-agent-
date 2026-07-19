@@ -149,7 +149,7 @@ function ksaTimeString() {
 }
 
 // إرسال صور شقة معيّنة (كل الصور داخل /opt/maha/media/<key>/)
-async function sendPhotos(chatId, key, phone) {
+async function sendPhotos(chatId, key, phone, chat) {
   try {
     const dir = path.join(MEDIA_DIR, key);
     if (!fs.existsSync(dir)) {
@@ -163,7 +163,8 @@ async function sendPhotos(chatId, key, phone) {
     // ترسل كل الصور دفعة وحدة ورا بعض بدون تأخير بينها (تبان كمجموعة)
     for (const f of files) {
       const media = MessageMedia.fromFilePath(path.join(dir, f));
-      await client.sendMessage(chatId, media);
+      if (chat) await chat.sendMessage(media);
+      else await client.sendMessage(chatId, media);
     }
     console.log(`[صور] أُرسلت ${files.length} صورة (${key}) إلى ${phone}`);
   } catch (e) {
@@ -249,7 +250,12 @@ client.on("message", async (msg) => {
     }
     if (!text) return;
 
-    const chat = await msg.getChat();
+    let chat = null;
+    try {
+      chat = await msg.getChat();
+    } catch (e) {
+      console.error("تعذّر جلب المحادثة:", (e && e.message) || e);
+    }
     const nf = nightFactor(); // معامل البطء حسب وقت اليوم
 
     // 4) تأخير قراءة بشري (وأحياناً تكون مشغولة) ثم تعلّمها مقروءة
@@ -257,9 +263,11 @@ client.on("message", async (msg) => {
     if (Math.random() < 0.1) readMs += rand(15000, 40000); // ~10%: كانت مشغولة
     readMs = Math.min(readMs, 45000); // سقف أمان
     await sleep(readMs);
-    try {
-      await chat.sendSeen();
-    } catch (e) {}
+    if (chat) {
+      try {
+        await chat.sendSeen();
+      } catch (e) {}
+    }
 
     // 5) تأخير تفكير قصير قبل ما تبدأ ترد (استيعاب + صياغة)
     await humanDelay(2000 * nf, 7000 * nf);
@@ -302,23 +310,31 @@ client.on("message", async (msg) => {
         const chunk = chunks[i];
         // فاصل بين الرسالة والثانية (ما نرسلهم في نفس اللحظة أبداً)
         if (i > 0) await humanDelay(900 * nf, 2500 * nf);
-        try {
-          await chat.sendStateTyping();
-        } catch (e) {}
+        if (chat) {
+          try {
+            await chat.sendStateTyping();
+          } catch (e) {}
+        }
         // مدة الكتابة ≈ عدد الحروف ÷ (4–7 حرف/ثانية) + تشويش، بسقف 12 ثانية
         const typeMs = Math.min(
           (chunk.length / rand(4, 7)) * 1000 + rand(300, 1200),
           12000
         );
         await sleep(typeMs);
-        await client.sendMessage(msg.from, chunk);
+        // نرسل عبر كائن المحادثة (أضمن مع عناوين @lid)، ونرجع للطريقة العامة عند الفشل
+        try {
+          if (chat) await chat.sendMessage(chunk);
+          else await client.sendMessage(msg.from, chunk);
+        } catch (e) {
+          await client.sendMessage(msg.from, chunk);
+        }
       }
       console.log(`[رد] أُرسل إلى ${phone} (${chunks.length} رسالة)`);
     }
 
     // 9) أرسل الصور إن طلبها العميل
     if (photoKey) {
-      await sendPhotos(msg.from, photoKey, phone);
+      await sendPhotos(msg.from, photoKey, phone, chat);
     }
 
     // 10) نبّه المالك إن وافق العميل على التحويل (بالرقم الحقيقي للعميل)
@@ -326,7 +342,7 @@ client.on("message", async (msg) => {
       await alertOwner(customerNumber, handoffSummary);
     }
   } catch (e) {
-    console.error("خطأ في معالجة رسالة:", e.message);
+    console.error("خطأ في معالجة رسالة:", (e && e.stack) || e);
   }
 });
 
